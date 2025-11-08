@@ -451,7 +451,7 @@ body {
   background-color: #1c86ee;
 }
 
-/* 🔽 Këtu e zvogëlojmë foton */
+
 .hero-image {
   flex: 1;
   display: flex;
@@ -459,14 +459,14 @@ body {
 }
 
 .hero-image img {
-  width: 85%;            /* më parë ishte 100% */
-  max-width: 400px;      /* më parë ishte 480px */
+  width: 85%;            
+  max-width: 400px;    
   border-radius: 12px;
   object-fit: cover;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Responsiv për telefon/tablet */
+
 @media (max-width: 768px) {
   .hero {
     flex-direction: column;
@@ -479,3 +479,162 @@ body {
     margin-top: 1.5rem;
   }
 }
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: #dffcf0; 
+}
+
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.signup-box {
+  background-color: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 360px;
+  text-align: center;
+}
+
+.signup-box h2 {
+  color: #38b29e; /* mint e errët */
+  margin-bottom: 24px;
+}
+
+.signup-box form {
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-box input {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.signup-box input:focus {
+  border-color: #4fd1a1;
+  outline: none;
+  box-shadow: 0 0 5px rgba(79, 209, 161, 0.5);
+}
+
+.signup-box button {
+  background-color: #4fd1a1; 
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.signup-box button:hover {
+  background-color: #38b29e;
+}
+
+.signup-box p {
+  margin-top: 16px;
+  color: #555;
+  font-size: 14px;
+}
+
+.signup-box a {
+  color: #38b29e;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.signup-box a:hover {
+  text-decoration: underline;
+}
+
+
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: #dffcf0; 
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-box {
+  background-color: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 360px;
+  text-align: center;
+}
+
+.login-box h2 {
+  color: #38b29e; 
+  margin-bottom: 24px;
+}
+
+.login-box form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-box input {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.login-box input:focus {
+  border-color: #4fd1a1;
+  outline: none;
+  box-shadow: 0 0 5px rgba(79, 209, 161, 0.5);
+}
+
+.login-box button {
+  background-color: #4fd1a1; 
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.login-box button:hover {
+  background-color: #38b29e;
+}
+
+.login-box p {
+  margin-top: 16px;
+  color: #555;
+  font-size: 14px;
+}
+
+.login-box a {
+  color: #38b29e;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-box a:hover {
+  text-decoration: underline;
+}
+

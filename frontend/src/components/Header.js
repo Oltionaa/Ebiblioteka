@@ -1,15 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 
 function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate(); 
   return (
     <header className="header">
       <div className="container">
         <div className="header-content">
-          <a href="#" className="logo">
+          <a href="/" className="logo">
             📚 Ebibloteka
           </a>
 
@@ -21,17 +22,30 @@ function Header() {
           </nav>
 
           <div className="header-actions">
-            <button className="btn btn-outline">Kyçu</button>
-            <button className="btn btn-primary">Regjistrohu</button>
+            <button
+              className="btn btn-outline"
+              onClick={() => navigate("/login")}
+            >
+              Kyçu
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate("/signup")}
+            >
+              Regjistrohu
+            </button>
           </div>
 
-          <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
             ☰
           </button>
         </div>
       </div>
     </header>
-  )
+  );
 }
 
-export default Header
+export default Header;
