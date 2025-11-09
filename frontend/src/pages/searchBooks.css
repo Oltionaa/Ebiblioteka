@@ -1,0 +1,31 @@
+.search-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.search-container input {
+  padding: 8px;
+  width: 70%;
+  margin-right: 10px;
+}
+
+.search-container button {
+  padding: 8px 12px;
+}
+
+.book-list {
+  list-style: none;
+  padding: 0;
+}
+
+.book-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.error {
+  color: red;
+}

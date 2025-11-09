@@ -7,12 +7,10 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
     try {
       const res = await fetch("http://localhost:5000/api/auth/login", {
@@ -22,16 +20,11 @@ function Login() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Gabim serveri");
+      if (!res.ok) throw new Error(data.message);
 
-      // Ruaj token
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      setSuccess(data.message || "Kyçu me sukses!");
-      setEmail("");
-      setPassword("");
-
-      // ✅ Redirect në HomePage
+      alert(`Kyçu me sukses! Numri i kartelës: ${data.user.numriKarteLexuesi}`);
       window.location.href = "/";
     } catch (err) {
       setError(err.message);
@@ -43,7 +36,6 @@ function Login() {
       <div className="auth-box">
         <h2 className="auth-title">Kyçu në llogarinë tënde</h2>
         {error && <p className="auth-error">{error}</p>}
-        {success && <p className="auth-success">{success}</p>}
 
         <form onSubmit={handleSubmit}>
           <input

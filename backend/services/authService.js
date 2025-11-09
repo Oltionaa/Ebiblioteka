@@ -1,44 +1,61 @@
-const User = require("../models/user");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+import User from "../models/user.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 class AuthService {
-  // ✅ Regjistrimi i përdoruesit
   static async register(data) {
     const { emri, mbiemri, email, fjalekalimi } = data;
 
-    // Kontrollo nëse email ekziston
     const existingUser = await User.findByEmail(email);
-    if (existingUser) {
-      throw new Error("Email ekziston!");
-    }
+    if (existingUser) throw new Error("Email ekziston!");
 
-    // Krijo dhe ruaj përdoruesin
-    const user = new User(emri, mbiemri, email, fjalekalimi);
+    const hashedPassword = await bcrypt.hash(fjalekalimi, 10);
+
+    const user = new User(emri, mbiemri, email, hashedPassword);
     await user.save();
 
-    return "Përdoruesi u krijua me sukses!";
+    const token = jwt.sign(
+      { id: user.id_perdoruesi, roli: user.roli },
+      "secretkey",
+      { expiresIn: "1d" }
+    );
+
+    return {
+      token,
+      user: {
+        emri: user.emri,
+        email: user.email,
+        roli: user.roli,
+        numriKarteLexuesi: user.numriKarteLexuesi
+      }
+    };
   }
 
-  // ✅ Login
   static async login(data) {
     const { email, fjalekalimi } = data;
 
     const user = await User.findByEmail(email);
-    if (!user) throw new Error("Email ose fjalëkalimi i gabuar!");
+    if (!user) throw new Error("Email ose fjalekalimi i gabuar!");
 
     const isMatch = await bcrypt.compare(fjalekalimi, user.fjalekalimi);
-    if (!isMatch) throw new Error("Email ose fjalëkalimi i gabuar!");
+    if (!isMatch) throw new Error("Email ose fjalekalimi i gabuar!");
 
-    // Gjenero JWT
     const token = jwt.sign(
       { id: user.id_perdoruesi, roli: user.roli },
-      "secretkey",      // në prodhim përdor env variable
+      "secretkey",
       { expiresIn: "1d" }
     );
 
-    return { token, user: { emri: user.emri, email: user.email, roli: user.roli } };
+    return {
+      token,
+      user: {
+        emri: user.emri,
+        email: user.email,
+        roli: user.roli,
+        numriKarteLexuesi: user.numriKarteLexuesi
+      }
+    };
   }
 }
 
-module.exports = AuthService;
+export default AuthService;
