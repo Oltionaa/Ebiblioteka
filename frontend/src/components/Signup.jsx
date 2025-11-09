@@ -1,30 +1,53 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import "../styles/auth.css";
 
 function SignUp() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
     if (password !== confirmPassword) {
-      setError("Fjalëkalimet nuk përputhen!")
-      return
+      setError("Fjalëkalimet nuk përputhen!");
+      return;
     }
-    setError("")
-    console.log("Sign Up:", { email, password })
-  }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, fjalekalimi: password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Gabim serveri");
+
+      setSuccess(data.message || "Regjistrim me sukses!");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+
+      // ✅ Redirect në HomePage
+      window.location.href = "/";
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   return (
     <div className="auth-container">
       <div className="auth-box">
         <h2 className="auth-title">Krijo llogarinë tënde</h2>
-
         {error && <p className="auth-error">{error}</p>}
+        {success && <p className="auth-success">{success}</p>}
 
         <form onSubmit={handleSubmit}>
           <input
@@ -57,7 +80,7 @@ function SignUp() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default SignUp
+export default SignUp;

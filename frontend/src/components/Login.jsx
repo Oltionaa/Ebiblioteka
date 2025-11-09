@@ -1,22 +1,49 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import "../styles/auth.css";
 
-
 function Login() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log("Login:", { email, password })
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, fjalekalimi: password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Gabim serveri");
+
+      // Ruaj token
+      localStorage.setItem("token", data.token);
+
+      setSuccess(data.message || "Kyçu me sukses!");
+      setEmail("");
+      setPassword("");
+
+      // ✅ Redirect në HomePage
+      window.location.href = "/";
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   return (
     <div className="auth-container">
       <div className="auth-box">
         <h2 className="auth-title">Kyçu në llogarinë tënde</h2>
+        {error && <p className="auth-error">{error}</p>}
+        {success && <p className="auth-success">{success}</p>}
 
         <form onSubmit={handleSubmit}>
           <input
@@ -41,7 +68,7 @@ function Login() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;
