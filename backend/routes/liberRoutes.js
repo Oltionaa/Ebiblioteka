@@ -1,8 +1,8 @@
 import express from "express";
-import { getAllBooks } from "../controllers/liberController.js"; // ✅ Sigurohu që është named export
+import { getAllLibra } from "../controllers/liberController.js";
 
 const router = express.Router();
 
-router.get("/", getAllBooks);
+router.get("/", getAllLibra);
 
 export default router;

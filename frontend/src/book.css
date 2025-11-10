@@ -1,0 +1,20 @@
+.books-container {
+  padding: 20px;
+}
+
+.books-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.books-table th,
+.books-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.books-table th {
+  background-color: #4caf50;
+  color: white;
+}
