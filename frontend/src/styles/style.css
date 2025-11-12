@@ -638,3 +638,13 @@ body {
   text-decoration: underline;
 }
 
+.react-calendar__tile.zene {
+  background: #ffb3b3 !important;
+  color: #000;
+  border-radius: 6px;
+}
+
+.react-calendar__tile.lire {
+  background: #c2f0c2 !important;
+  border-radius: 6px;
+}

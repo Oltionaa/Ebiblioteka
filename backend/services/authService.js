@@ -7,10 +7,9 @@ class AuthService {
     const { emri, mbiemri, email, fjalekalimi } = data;
 
     const existingUser = await User.findByEmail(email);
-    if (existingUser) throw new Error("Email ekziston!");
+    if (existingUser) throw new Error("Ky email ekziston tashmë!");
 
     const hashedPassword = await bcrypt.hash(fjalekalimi, 10);
-
     const user = new User(emri, mbiemri, email, hashedPassword);
     await user.save();
 
@@ -23,11 +22,13 @@ class AuthService {
     return {
       token,
       user: {
+        id_perdoruesi: user.id_perdoruesi, 
         emri: user.emri,
+        mbiemri: user.mbiemri,
         email: user.email,
         roli: user.roli,
-        numriKarteLexuesi: user.numriKarteLexuesi
-      }
+        numriKarteLexuesi: user.numriKarteLexuesi,
+      },
     };
   }
 
@@ -35,10 +36,10 @@ class AuthService {
     const { email, fjalekalimi } = data;
 
     const user = await User.findByEmail(email);
-    if (!user) throw new Error("Email ose fjalekalimi i gabuar!");
+    if (!user) throw new Error("Email ose fjalëkalimi i gabuar!");
 
     const isMatch = await bcrypt.compare(fjalekalimi, user.fjalekalimi);
-    if (!isMatch) throw new Error("Email ose fjalekalimi i gabuar!");
+    if (!isMatch) throw new Error("Email ose fjalëkalimi i gabuar!");
 
     const token = jwt.sign(
       { id: user.id_perdoruesi, roli: user.roli },
@@ -49,11 +50,13 @@ class AuthService {
     return {
       token,
       user: {
+        id_perdoruesi: user.id_perdoruesi,
         emri: user.emri,
+        mbiemri: user.mbiemri,
         email: user.email,
         roli: user.roli,
-        numriKarteLexuesi: user.numriKarteLexuesi
-      }
+        numriKarteLexuesi: user.numriKarteLexuesi,
+      },
     };
   }
 }
