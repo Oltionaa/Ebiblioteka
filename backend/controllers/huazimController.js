@@ -15,17 +15,26 @@ export const huazoLiber = async (req, res) => {
 
     const id_kopja = kopje[0].id_kopja;
 
-    await pool.query("UPDATE kopja_librit SET statusi = 'i_huazuar' WHERE id_kopja = ?", [id_kopja]);
-
     await pool.query(
-      "INSERT INTO huazim (id_perdoruesi, id_liber, dataHuazimit, dataKthimit, statusi) VALUES (?, ?, CURDATE(), ?, 'aktive')",
-      [id_perdoruesi, id_liber, dataKthimit || null]
+      "UPDATE kopja_librit SET statusi = 'i_huazuar' WHERE id_kopja = ?",
+      [id_kopja]
     );
 
-    res.json({ message: "📚 Libri u huazua me sukses!", id_kopja });
+    await pool.query(
+      `INSERT INTO huazim (id_perdoruesi, id_liber, dataHuazimit, dataKthimit, statusi)
+       VALUES (?, ?, CURDATE(), ?, 'aktive')`,
+      [id_perdoruesi, id_liber, dataKthimit]
+    );
+
+    res.json({
+      message: "Libri u huazua me sukses!",
+      id_kopja,
+      dataHuazimit: new Date().toISOString().split("T")[0],
+      dataKthimit,
+    });
   } catch (err) {
-    console.error(" Gabim gjatë huazimit të librit:", err);
-    res.status(500).json({ message: "Gabim në server gjatë huazimit të librit" });
+    console.error("Gabim gjatë huazimit të librit:", err);
+    res.status(500).json({ message: "Gabim në server gjatë huazimit të librit." });
   }
 };
 
@@ -50,15 +59,42 @@ export const ktheLiber = async (req, res) => {
     const id_kopja = rows[0].id_kopja;
 
     await pool.query("UPDATE kopja_librit SET statusi = 'i_lire' WHERE id_kopja = ?", [id_kopja]);
-
     await pool.query(
       "UPDATE huazim SET statusi = 'kthyer', dataKthimit = CURDATE() WHERE id_huazimi = ?",
       [id_huazimi]
     );
 
-    res.json({ message: " Libri u kthye me sukses!" });
+    res.json({ message: "Libri u kthye me sukses!" });
   } catch (err) {
-    console.error(" Gabim gjatë kthimit të librit:", err);
-    res.status(500).json({ message: "Gabim në server gjatë kthimit të librit" });
+    console.error("Gabim gjatë kthimit të librit:", err);
+    res.status(500).json({ message: "Gabim në server gjatë kthimit të librit." });
+  }
+};
+export const getDatatEZena = async (req, res) => {
+  const { id_liber } = req.params;
+
+  try {
+    const [huazime] = await pool.query(
+      `SELECT dataHuazimit AS start, dataKthimit AS end
+       FROM huazim
+       WHERE id_liber = ? AND statusi = 'aktive'`,
+      [id_liber]
+    );
+    const [rezervime] = await pool.query(
+      `SELECT dataRezervuar AS start, dataRezervuar AS end
+       FROM rezervim
+       WHERE id_liber = ? AND (statusi = 'aktiv' OR statusi = 'rezervuar')`,
+      [id_liber]
+    );
+
+    const combined = [...huazime, ...rezervime].map((d) => ({
+      start: new Date(d.start).toISOString().split("T")[0],
+      end: new Date(d.end).toISOString().split("T")[0],
+    }));
+
+    res.json(combined);
+  } catch (err) {
+    console.error("Gabim gjatë marrjes së datave të zëna:", err);
+    res.status(500).json({ message: "Gabim gjatë marrjes së datave të zëna." });
   }
 };
