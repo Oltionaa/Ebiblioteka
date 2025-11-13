@@ -1,48 +1,60 @@
-"use client";
-
-import { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { Link } from "react-router-dom";
+import "../styles/style.css";
 
 function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navigate = useNavigate(); 
+  const roli = localStorage.getItem("roli"); 
+  const isLoggedIn = localStorage.getItem("user") !== null;
+
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = "/";
+  };
+
   return (
     <header className="header">
-      <div className="container">
-        <div className="header-content">
-          <a href="/" className="logo">
-            📚 Ebibloteka
-          </a>
+      <div className="header-content">
 
-          <nav className="nav">
-            <a href="#ballina">Ballina</a>
-            <a href="#vecorite">Veçoritë</a>
-            <a href="#rreth">Rreth Nesh</a>
-            <a href="#kontakti">Kontakti</a>
-          </nav>
+        {/* LOGO */}
+        <Link to="/" className="logo">
+          📚 EbibloteKa
+        </Link>
 
-          <div className="header-actions">
-            <button
-              className="btn btn-outline"
-              onClick={() => navigate("/login")}
-            >
-              Kyçu
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => navigate("/signup")}
-            >
-              Regjistrohu
-            </button>
-          </div>
+        {/* NAV LINKS */}
+        <nav className="nav">
+          <Link to="/">Ballina</Link>
+          <Link to="/features">Veçoritë</Link>
+          <Link to="/about">Rreth Nesh</Link>
+          <Link to="/contact">Kontakti</Link>
+        </nav>
 
-          <button
-            className="mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            ☰
-          </button>
+        {/* RIGHT SIDE */}
+        <div className="header-actions">
+
+          {/* NËSE ËSHTË I KYÇUR */}
+          {isLoggedIn ? (
+            <>
+              {/* PROFILI VETËM PËR BIBLIOTEKAR */}
+              {roli === "Bibliotekar" && (
+                <Link to="/dashboard-bibliotekar" className="btn btn-primary">
+                  👤 Profili im
+                </Link>
+              )}
+
+              {/* LOGOUT – I KALTËR SI REGJISTROHU */}
+              <button onClick={handleLogout} className="btn btn-primary">
+                Dil
+              </button>
+            </>
+          ) : (
+            <>
+              {/* USER NORMAL */}
+              <Link to="/login" className="btn btn-outline">Kyçu</Link>
+              <Link to="/signup" className="btn btn-primary">Regjistrohu</Link>
+            </>
+          )}
+
         </div>
+
       </div>
     </header>
   );

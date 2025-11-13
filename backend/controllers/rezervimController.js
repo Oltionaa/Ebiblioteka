@@ -98,3 +98,60 @@ export const ndryshoRezervim = async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë ndryshimit të rezervimit." });
   }
 };
+
+export const getAllRezervimet = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT 
+        r.id_rezervimi,
+        r.id_perdoruesi,
+        r.id_liber,
+        r.dataRezervimit,
+        r.dataRezervuar,
+        r.statusi,
+        l.titulli,
+        p.emri AS emri_perdoruesit
+      FROM rezervim r
+      JOIN liber l ON r.id_liber = l.id_liber
+      JOIN perdoruesi p ON r.id_perdoruesi = p.id_perdoruesi
+      ORDER BY r.dataRezervimit DESC`
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("Gabim gjatë marrjes së rezervimeve për admin:", err);
+    res.status(500).json({ message: "Gabim në marrjen e rezervimeve." });
+  }
+};
+
+export const miratoRezervim = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await pool.query(
+      "UPDATE rezervim SET statusi = 'miratuar' WHERE id_rezervimi = ?",
+      [id]
+    );
+
+    res.json({ message: "Rezervimi u miratua me sukses!" });
+  } catch (err) {
+    console.error("Gabim gjatë miratimit:", err);
+    res.status(500).json({ message: "Gabim gjatë miratimit të rezervimit." });
+  }
+};
+
+export const refuzoRezervim = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await pool.query(
+      "UPDATE rezervim SET statusi = 'refuzuar' WHERE id_rezervimi = ?",
+      [id]
+    );
+
+    res.json({ message: "Rezervimi u refuzua!" });
+  } catch (err) {
+    console.error("Gabim gjatë refuzimit:", err);
+    res.status(500).json({ message: "Gabim gjatë refuzimit të rezervimit." });
+  }
+};

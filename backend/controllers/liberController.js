@@ -31,3 +31,87 @@ export const getAllLibra = async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë marrjes së librave." });
   }
 };
+export const shtoLiber = async (req, res) => {
+  const { titulli, autori, vitiBotimit, foto, sasia } = req.body;
+
+  try {
+    const [result] = await pool.query(
+      "INSERT INTO liber (titulli, autori, vitiBotimit, foto, sasia) VALUES (?, ?, ?, ?, ?)",
+      [titulli, autori, vitiBotimit, foto, sasia]
+    );
+
+    res.json({ message: "Libri u shtua me sukses!" });
+  } catch (err) {
+    console.error("Gabim shtoLiber:", err);
+    res.status(500).json({ message: "Gabim gjatë shtimit të librit." });
+  }
+};
+
+
+export const editoLiber = async (req, res) => {
+  const { id } = req.params;
+  const { titulli, autori, vitiBotimit, foto, sasia } = req.body;
+
+  try {
+    await pool.query(
+      "UPDATE liber SET titulli=?, autori=?, vitiBotimit=?, foto=?, sasia=? WHERE id_liber=?",
+      [titulli, autori, vitiBotimit, foto, sasia, id]
+    );
+
+    res.json({ message: "Libri u ndryshua!" });
+  } catch (err) {
+    console.error("Gabim editoLiber:", err);
+    res.status(500).json({ message: "Gabim gjatë ndryshimit të librit." });
+  }
+};
+
+export const fshiLiber = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await pool.query(
+      "DELETE FROM liber WHERE id_liber = ?",
+      [id]
+    );
+    res.json({ message: "Libri u fshi." });
+  } catch (err) {
+    res.status(500).json({ message: "Gabim gjatë fshirjes së librit." });
+  }
+};
+export const getLibraDetaje = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT 
+         l.id_liber,
+         l.titulli,
+         l.autori,
+         l.vitiBotimit,
+         l.foto,
+         
+         -- Kopjet totale
+         (SELECT COUNT(*) FROM kopja_librit k WHERE k.id_liber = l.id_liber) AS total_kopje,
+
+         -- Kopjet e lira
+         (SELECT COUNT(*) FROM kopja_librit k WHERE k.id_liber = l.id_liber AND k.statusi = 'i_lire') AS kopje_lira,
+
+         -- Kopjet aktive (të huazuara)
+         (SELECT COUNT(*) FROM kopja_librit k WHERE k.id_liber = l.id_liber AND k.statusi = 'i_huazuar') AS kopje_huazuara,
+
+         -- Kush e ka huazuar librin (emri)
+         (SELECT p.emri FROM huazim h 
+          JOIN perdoruesi p ON h.id_perdoruesi = p.id_perdoruesi
+          WHERE h.id_liber = l.id_liber AND h.statusi = 'aktive'
+          LIMIT 1
+         ) AS huazuar_nga
+         
+       FROM liber l
+       ORDER BY l.id_liber DESC`
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("Gabim getLibraDetaje:", err);
+    res.status(500).json({ message: "Gabim gjatë marrjes së të dhënave." });
+  }
+  
+};

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import "../styles/auth.css";
 
@@ -22,10 +20,14 @@ function Login() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
+      // Ruaj user-in e kyçur
       localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("roli", data.user.roli);  // p.sh Bibliotekar ose User
+      localStorage.setItem("emri", data.user.emri);
 
-      alert(`Kyçu me sukses! Numri i kartelës: ${data.user.numriKarteLexuesi}`);
+      alert("Kyçu me sukses!");
       window.location.href = "/";
+
     } catch (err) {
       setError(err.message);
     }
@@ -46,6 +48,7 @@ function Login() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
           <input
             type="password"
             placeholder="Fjalëkalimi"
@@ -54,6 +57,7 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
           <button type="submit" className="auth-button">
             Kyçu
           </button>
