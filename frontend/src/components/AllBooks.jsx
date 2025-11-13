@@ -8,21 +8,35 @@ function AllBooks() {
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
-  const [popup, setPopup] = useState({ show: false, message: "" });
-
+  const [popup, setPopup] = useState({ show: false, message: "", color: "#28a745" });
   const [bookDates, setBookDates] = useState([]);
   const [showDatesModal, setShowDatesModal] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState(null);
 
+  const user = JSON.parse(localStorage.getItem("user"));
+  const id_perdoruesi = user?.id_perdoruesi || user?.id || null;
+
+  // 🔹 funksion për popup
+  const showPopup = (message, color = "#28a745") => {
+    setPopup({ show: true, message, color });
+    setTimeout(() => setPopup({ show: false, message: "" }), 4000);
+  };
+
+  // 🔹 merr librat nga API
   const fetchBooks = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/libra");
-      if (!res.ok) throw new Error("Gabim gjatë marrjes së librave");
       const data = await res.json();
-      setBooks(data);
-      setFilteredBooks(data);
+      if (Array.isArray(data)) {
+        setBooks(data);
+        setFilteredBooks(data);
+      } else {
+        console.error("❌ API nuk ktheu array:", data);
+        setBooks([]);
+        setFilteredBooks([]);
+      }
     } catch (err) {
-      console.error( err);
+      console.error("Gabim gjatë marrjes së librave:", err);
     }
   };
 
@@ -30,6 +44,7 @@ function AllBooks() {
     fetchBooks();
   }, []);
 
+  // 🔹 filtro sipas kërkimit
   useEffect(() => {
     const q = search.toLowerCase();
     const results = books.filter(
@@ -41,9 +56,14 @@ function AllBooks() {
     setFilteredBooks(results);
   }, [search, books]);
 
-  const handleHuazo = async (id_liber, id_perdoruesi) => {
+  // 🔹 huazo libër
+  const handleHuazo = async (id_liber) => {
+    if (!id_perdoruesi) {
+      alert("Ju duhet të jeni të kyçur për të huazuar libra!");
+      return;
+    }
     if (!selectedDate) {
-      alert("Zgjedh datën e kthimit para huazimit!");
+      alert("Zgjedh datën e kthimit!");
       return;
     }
 
@@ -51,56 +71,47 @@ function AllBooks() {
       const res = await fetch("http://localhost:5000/api/huazime/huazo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id_liber,
-          id_perdoruesi,
-          dataKthimit: selectedDate,
-        }),
+        body: JSON.stringify({ id_liber, id_perdoruesi, dataKthimit: selectedDate }),
       });
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
 
-      if (!res.ok) {
-        throw new Error(data.message || "Gabim gjatë huazimit!");
-      }
-
-      setPopup({
-        show: true,
-        message: ` ${data.message}\nData e kthimit: ${selectedDate}`,
-      });
-
+      showPopup(`📘 ${data.message}`, "#28a745");
       setShowDatePicker(null);
       setSelectedDate("");
       fetchBooks();
-      setTimeout(() => setPopup({ show: false, message: "" }), 3000);
     } catch (err) {
-      alert(err.message);
+      showPopup(err.message, "#dc3545");
     }
   };
 
- const handleRezervo = async (id_liber, id_perdoruesi, data) => {
-  try {
-    const res = await fetch("http://localhost:5000/api/rezervime/rezervo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_liber, id_perdoruesi, data }),
-    });
-
-    const dataRes = await res.json();
-
-    if (!res.ok) {
-      throw new Error(dataRes.message || "Gabim gjatë rezervimit!");
+  // 🔹 rezervim libri (me përmirësim: mbyllet modal)
+  const handleRezervo = async (id_liber, data) => {
+    if (!id_perdoruesi) {
+      alert("Ju duhet të jeni të kyçur për të rezervuar libra!");
+      return;
     }
 
-    setPopup({ show: true, message: `📖 ${dataRes.message}` });
-    setTimeout(() => setPopup({ show: false, message: "" }), 3000);
-    fetchBooks();
-    fetchDatatEZena(id_liber);
-  } catch (err) {
-    alert(err.message);
-  }
-};
+    try {
+      const res = await fetch("http://localhost:5000/api/rezervime/rezervo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_liber, id_perdoruesi, data }),
+      });
+      const dataRes = await res.json();
+      if (!res.ok) throw new Error(dataRes.message);
 
+      showPopup(`📖 ${dataRes.message}`, "#28a745");
+      setShowDatesModal(false);  // ✅ mbyll kalendarin
+      setBookDates([]);          // ✅ pastro datat
+      // (opsionale) dërgon automatikisht te dashboard:
+      // window.location.href = "/dashboard";
+    } catch (err) {
+      showPopup(err.message, "#dc3545");
+    }
+  };
+
+  // 🔹 merr datat e zëna për një libër
   const fetchDatatEZena = async (id_liber) => {
     try {
       const res = await fetch(`http://localhost:5000/api/huazime/datat/${id_liber}`);
@@ -115,6 +126,7 @@ function AllBooks() {
 
   return (
     <div className="books-container" style={{ padding: "2rem" }}>
+      {/* 🔍 Kërkimi */}
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
         <input
           type="text"
@@ -131,9 +143,8 @@ function AllBooks() {
         />
       </div>
 
-      {filteredBooks.length === 0 ? (
-        <p style={{ textAlign: "center" }}>Nuk ka libra që përputhen me kërkimin.</p>
-      ) : (
+      {/* 📚 Lista e librave */}
+      {Array.isArray(filteredBooks) && filteredBooks.length > 0 ? (
         <div
           className="books-list"
           style={{
@@ -184,15 +195,12 @@ function AllBooks() {
               )}
 
               <h3 style={{ color: "#333", fontWeight: "600" }}>{book.titulli}</h3>
-              <p style={{ margin: "0.3rem 0" }}>Autor: {book.autori}</p>
-              <p style={{ margin: "0.3rem 0" }}>Viti: {book.vitiBotimit || "—"}</p>
-              <p style={{ margin: "0.3rem 0" }}>
-                Kopje gjithsej: <b>{book.total_kopje}</b>
-              </p>
-              <p style={{ margin: "0.3rem 0" }}>
-                Kopje të lira: <b>{book.kopje_lira}</b>
-              </p>
+              <p>Autor: {book.autori}</p>
+              <p>Viti: {book.vitiBotimit || "—"}</p>
+              <p>Kopje gjithsej: <b>{book.total_kopje}</b></p>
+              <p>Kopje të lira: <b>{book.kopje_lira}</b></p>
 
+              {/* 🔹 Butonat */}
               {showDatePicker === book.id_liber ? (
                 <div style={{ marginTop: "1rem", textAlign: "center" }}>
                   <input
@@ -206,7 +214,7 @@ function AllBooks() {
                     }}
                   />
                   <button
-                    onClick={() => handleHuazo(book.id_liber, 1)}
+                    onClick={() => handleHuazo(book.id_liber)}
                     style={{
                       marginLeft: "10px",
                       padding: "6px 10px",
@@ -214,7 +222,6 @@ function AllBooks() {
                       color: "white",
                       border: "none",
                       borderRadius: "6px",
-                      cursor: "pointer",
                     }}
                   >
                     Konfirmo
@@ -227,21 +234,13 @@ function AllBooks() {
                       backgroundColor: "#ccc",
                       border: "none",
                       borderRadius: "6px",
-                      cursor: "pointer",
                     }}
                   >
                     Anulo
                   </button>
                 </div>
               ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    marginTop: "1rem",
-                    justifyContent: "center",
-                  }}
-                >
+                <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", justifyContent: "center" }}>
                   <button
                     onClick={() => setShowDatePicker(book.id_liber)}
                     disabled={book.kopje_lira === 0}
@@ -278,8 +277,11 @@ function AllBooks() {
             </div>
           ))}
         </div>
+      ) : (
+        <p style={{ textAlign: "center" }}>Nuk ka libra që përputhen me kërkimin.</p>
       )}
 
+      {/* 💬 Popup */}
       {popup.show && (
         <div
           style={{
@@ -287,19 +289,37 @@ function AllBooks() {
             bottom: "30px",
             left: "50%",
             transform: "translateX(-50%)",
-            backgroundColor: "#28a745",
+            backgroundColor: popup.color,
             color: "white",
             padding: "15px 25px",
             borderRadius: "10px",
             boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
             zIndex: 9999,
             fontWeight: "500",
+            textAlign: "center",
           }}
         >
-          {popup.message}
+          <p>{popup.message}</p>
+          {popup.message.toLowerCase().includes("rezervua") && (
+            <button
+              onClick={() => (window.location.href = "/dashboard")}
+              style={{
+                marginTop: "8px",
+                backgroundColor: "#fff",
+                color: "#28a745",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                cursor: "pointer",
+              }}
+            >
+              📖 Shko te Dashboard
+            </button>
+          )}
         </div>
       )}
 
+      {/* 📅 Modal për kalendarin */}
       {showDatesModal && (
         <div
           style={{
@@ -327,13 +347,6 @@ function AllBooks() {
             <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>📅 Datat e librave</h3>
 
             <Calendar
-              tileDisabled={({ date }) => {
-                return bookDates.some((d) => {
-                  const start = new Date(d.start);
-                  const end = new Date(d.end);
-                  return date >= start && date <= end;
-                });
-              }}
               tileClassName={({ date }) => {
                 const isZene = bookDates.some((d) => {
                   const start = new Date(d.start);
@@ -352,11 +365,8 @@ function AllBooks() {
 
                 if (isZene) {
                   alert("Kjo datë është e zënë!");
-                } else {
-                  if (window.confirm(`Dëshiron ta rezervosh librin më: ${selected}?`)) {
-                    handleRezervo(selectedBookId, 1, selected);
-                    setShowDatesModal(false);
-                  }
+                } else if (window.confirm(`📖 Dëshiron ta rezervosh librin më: ${selected}?`)) {
+                  handleRezervo(selectedBookId, selected);
                 }
               }}
             />

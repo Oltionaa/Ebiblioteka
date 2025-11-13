@@ -15,10 +15,7 @@ export const huazoLiber = async (req, res) => {
 
     const id_kopja = kopje[0].id_kopja;
 
-    await pool.query(
-      "UPDATE kopja_librit SET statusi = 'i_huazuar' WHERE id_kopja = ?",
-      [id_kopja]
-    );
+    await pool.query("UPDATE kopja_librit SET statusi = 'i_huazuar' WHERE id_kopja = ?", [id_kopja]);
 
     await pool.query(
       `INSERT INTO huazim (id_perdoruesi, id_liber, dataHuazimit, dataKthimit, statusi)
@@ -27,7 +24,7 @@ export const huazoLiber = async (req, res) => {
     );
 
     res.json({
-      message: "Libri u huazua me sukses!",
+      message: "📘 Libri u huazua me sukses!",
       id_kopja,
       dataHuazimit: new Date().toISOString().split("T")[0],
       dataKthimit,
@@ -70,9 +67,9 @@ export const ktheLiber = async (req, res) => {
     res.status(500).json({ message: "Gabim në server gjatë kthimit të librit." });
   }
 };
+
 export const getDatatEZena = async (req, res) => {
   const { id_liber } = req.params;
-
   try {
     const [huazime] = await pool.query(
       `SELECT dataHuazimit AS start, dataKthimit AS end
@@ -98,3 +95,30 @@ export const getDatatEZena = async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë marrjes së datave të zëna." });
   }
 };
+
+export const getHuazimetByUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT 
+         h.id_huazimi,
+         h.id_liber,
+         l.titulli,
+         h.dataHuazimit,
+         h.dataKthimit,
+         h.statusi
+       FROM huazim h
+       LEFT JOIN liber l ON h.id_liber = l.id_liber
+       WHERE h.id_perdoruesi = ?
+       ORDER BY h.dataHuazimit DESC`,
+      [id]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("Gabim gjatë marrjes së huazimeve:", err);
+    res.status(500).json({ message: "Gabim gjatë marrjes së huazimeve." });
+  }
+};
+
