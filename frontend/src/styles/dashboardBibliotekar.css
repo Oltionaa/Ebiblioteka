@@ -207,3 +207,29 @@ table button:nth-child(2) {
     padding: 15px;
   }
 }
+.add-book-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  max-width: 400px;
+}
+
+.add-book-form input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.btn-add {
+  background: #10b981;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-add:hover {
+  background: #0d946a;
+}

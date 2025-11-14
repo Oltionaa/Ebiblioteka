@@ -7,12 +7,19 @@ function LibrarianDashboard() {
   const [activeTab, setActiveTab] = useState("libra");
   const [editData, setEditData] = useState(null);
 
+  const [newBook, setNewBook] = useState({
+    titulli: "",
+    autori: "",
+    vitiBotimit: "",
+    foto: "",
+    sasia: "",
+  });
+
   useEffect(() => {
     loadLibra();
     loadRezervime();
   }, []);
 
-  // ===================== LOAD LIBRA =====================
   const loadLibra = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/libra");
@@ -23,7 +30,6 @@ function LibrarianDashboard() {
     }
   };
 
-  // ===================== LOAD REZERVIME =====================
   const loadRezervime = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/rezervime/admin");
@@ -34,7 +40,6 @@ function LibrarianDashboard() {
     }
   };
 
-  // ===================== EDIT LIBËR =====================
   const startEdit = (libri) => setEditData(libri);
 
   const saveEdit = async () => {
@@ -42,7 +47,11 @@ function LibrarianDashboard() {
       await fetch(`http://localhost:5000/api/libra/edit/${editData.id_liber}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editData),
+        body: JSON.stringify({
+          ...editData,
+          vitiBotimit: Number(editData.vitiBotimit),
+          sasia: Number(editData.sasia),
+        }),
       });
 
       setEditData(null);
@@ -52,7 +61,6 @@ function LibrarianDashboard() {
     }
   };
 
-  // ===================== FSHI LIBËR =====================
   const fshiLiber = async (id) => {
     if (!window.confirm("A dëshiron ta fshish librin?")) return;
 
@@ -67,7 +75,6 @@ function LibrarianDashboard() {
     }
   };
 
-  // ===================== MIRATO / REFUZO =====================
   const mirato = async (id) => {
     try {
       await fetch(`http://localhost:5000/api/rezervime/mirato/${id}`, {
@@ -90,87 +97,58 @@ function LibrarianDashboard() {
     }
   };
 
-  // ===================== FORMATIMI I DATAVE =====================
   const formatDate = (dateString) => {
     if (!dateString) return "";
     return new Date(dateString).toISOString().split("T")[0];
   };
 
+  const shtoLiber = async () => {
+    try {
+      const dataToSend = {
+        titulli: newBook.titulli,
+        autori: newBook.autori,
+        vitiBotimit: Number(newBook.vitiBotimit),
+        foto: newBook.foto,
+        sasia: Number(newBook.sasia),
+      };
+
+      await fetch("http://localhost:5000/api/libra/shto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToSend),
+      });
+
+      alert("Libri u shtua me sukses!");
+
+      setNewBook({ titulli: "", autori: "", vitiBotimit: "", foto: "", sasia: "" });
+      setActiveTab("libra");
+      loadLibra();
+    } catch (err) {
+      console.error("Gabim gjatë shtimit të librit:", err);
+    }
+  };
+
   return (
     <div className="admin-container">
       
-      {/* SIDEBAR */}
       <aside className="sidebar">
         <h2>📚 Bibliotekari</h2>
 
-        <button 
-          className={activeTab === "libra" ? "active" : ""}
-          onClick={() => setActiveTab("libra")}
-        >
+        <button className={activeTab === "libra" ? "active" : ""} onClick={() => setActiveTab("libra")}>
           📘 Librat
         </button>
 
-        <button 
-          className={activeTab === "rezervime" ? "active" : ""}
-          onClick={() => setActiveTab("rezervime")}
-        >
+        <button className={activeTab === "rezervime" ? "active" : ""} onClick={() => setActiveTab("rezervime")}>
           📝 Rezervimet
+        </button>
+
+        <button className={activeTab === "shto" ? "active" : ""} onClick={() => setActiveTab("shto")}>
+          ➕ Shto Liber
         </button>
       </aside>
 
       <main className="content">
 
-        {/* MODALI PËR EDITIM */}
-        {editData && (
-          <div className="modal">
-            <div className="modal-content">
-              <h3>Edito Librin</h3>
-
-              <input
-                type="text"
-                value={editData.titulli}
-                onChange={(e) =>
-                  setEditData({ ...editData, titulli: e.target.value })
-                }
-                placeholder="Titulli"
-              />
-
-              <input
-                type="text"
-                value={editData.autori}
-                onChange={(e) =>
-                  setEditData({ ...editData, autori: e.target.value })
-                }
-                placeholder="Autori"
-              />
-
-              <input
-                type="number"
-                value={editData.vitiBotimit}
-                onChange={(e) =>
-                  setEditData({ ...editData, vitiBotimit: e.target.value })
-                }
-                placeholder="Viti i botimit"
-              />
-
-              <input
-                type="text"
-                value={editData.foto || ""}
-                onChange={(e) =>
-                  setEditData({ ...editData, foto: e.target.value })
-                }
-                placeholder="Foto URL"
-              />
-
-              <button onClick={saveEdit}>Ruaj Ndryshimet</button>
-              <button className="cancel-btn" onClick={() => setEditData(null)}>
-                Anulo
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ================= LIBRAT ================= */}
         {activeTab === "libra" && (
           <section>
             <h1>📘 Librat në Sistem</h1>
@@ -205,7 +183,39 @@ function LibrarianDashboard() {
           </section>
         )}
 
-        {/* ================= REZERVIMET ================= */}
+        {editData && (
+          <div className="modal">
+            <div className="modal-content">
+              <h3>Edito Librin</h3>
+
+              <input type="text" value={editData.titulli} onChange={(e) => setEditData({ ...editData, titulli: e.target.value })} />
+              <input type="text" value={editData.autori} onChange={(e) => setEditData({ ...editData, autori: e.target.value })} />
+              <input type="number" value={editData.vitiBotimit} onChange={(e) => setEditData({ ...editData, vitiBotimit: Number(e.target.value) })} />
+              <input type="text" value={editData.foto || ""} onChange={(e) => setEditData({ ...editData, foto: e.target.value })} />
+              <input type="number" value={editData.sasia} onChange={(e) => setEditData({ ...editData, sasia: Number(e.target.value) })} />
+
+              <button onClick={saveEdit}>Ruaj</button>
+              <button className="cancel-btn" onClick={() => setEditData(null)}>Anulo</button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "shto" && (
+          <section>
+            <h1>➕ Shto Liber të Ri</h1>
+
+            <div className="add-book-form">
+              <input type="text" placeholder="Titulli" value={newBook.titulli} onChange={(e) => setNewBook({ ...newBook, titulli: e.target.value })} />
+              <input type="text" placeholder="Autori" value={newBook.autori} onChange={(e) => setNewBook({ ...newBook, autori: e.target.value })} />
+              <input type="number" placeholder="Viti i Botimit" value={newBook.vitiBotimit} onChange={(e) => setNewBook({ ...newBook, vitiBotimit: Number(e.target.value) })} />
+              <input type="text" placeholder="URL e fotos" value={newBook.foto} onChange={(e) => setNewBook({ ...newBook, foto: e.target.value })} />
+              <input type="number" placeholder="Sasia" value={newBook.sasia} onChange={(e) => setNewBook({ ...newBook, sasia: Number(e.target.value) })} />
+
+              <button className="btn-add" onClick={shtoLiber}>Shto Librin</button>
+            </div>
+          </section>
+        )}
+
         {activeTab === "rezervime" && (
           <section>
             <h1>📝 Rezervimet e Pritura</h1>
@@ -241,6 +251,7 @@ function LibrarianDashboard() {
             </table>
           </section>
         )}
+
       </main>
     </div>
   );
