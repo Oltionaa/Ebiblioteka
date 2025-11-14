@@ -1,38 +1,54 @@
 import db from "../utils/db.js";
 
 class User {
-  constructor(emri, mbiemri, email, fjalekalimi, numriKarteLexuesi = null, roli = "Perdorues") {
+  constructor(emri, mbiemri, email, fjalekalimi, roli = "User", numriKarteLexuesi = null) {
     this.emri = emri;
     this.mbiemri = mbiemri;
     this.email = email;
     this.fjalekalimi = fjalekalimi;
     this.roli = roli;
-    this.numriKarteLexuesi = numriKarteLexuesi; // do ta gjenerojmë në save()
+    this.numriKarteLexuesi = numriKarteLexuesi;
   }
 
-  static async gjeneroNumrinKarteles() {
-    // Merr ID më të madhe ekzistuese nga tabela
-    const [rows] = await db.execute(
-      "SELECT MAX(id_perdoruesi) AS maxId FROM perdoruesi"
-    );
+  // gjenero numër rastësor: LEX-284193
+  static gjeneroRandom() {
+    return `LEX-${Math.floor(100000 + Math.random() * 900000)}`;
+  }
 
-    const maxId = rows[0].maxId || 0; // nëse s’ka përdorues, fillo nga 0
-    const nextId = maxId + 1;
+  // gjenero numër DHE kontrollo unikalitetin në DB
+  static async gjeneroNumrinUnik() {
+    let numri;
 
-    // Formo numrin e kartelës me format LEX-000001
-    const formatted = nextId.toString().padStart(6, "0");
-    return `LEX-${formatted}`;
+    while (true) {
+      numri = this.gjeneroRandom();
+
+      const [rows] = await db.execute(
+        "SELECT 1 FROM perdoruesi WHERE numriKarteLexuesi = ?",
+        [numri]
+      );
+
+      if (rows.length === 0) break; // gjetëm numër unik
+    }
+
+    return numri;
   }
 
   async save() {
-    // Gjenero numrin e kartelës nëse s’është caktuar
     if (!this.numriKarteLexuesi) {
-      this.numriKarteLexuesi = await User.gjeneroNumrinKarteles();
+      this.numriKarteLexuesi = await User.gjeneroNumrinUnik();
     }
 
     const [result] = await db.execute(
-      "INSERT INTO perdoruesi (emri, mbiemri, email, fjalekalimi, numriKarteLexuesi, roli) VALUES (?, ?, ?, ?, ?, ?)",
-      [this.emri, this.mbiemri, this.email, this.fjalekalimi, this.numriKarteLexuesi, this.roli]
+      `INSERT INTO perdoruesi (emri, mbiemri, email, fjalekalimi, roli, numriKarteLexuesi)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        this.emri,
+        this.mbiemri,
+        this.email,
+        this.fjalekalimi,
+        this.roli,
+        this.numriKarteLexuesi
+      ]
     );
 
     this.id_perdoruesi = result.insertId;

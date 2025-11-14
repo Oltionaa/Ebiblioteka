@@ -16,13 +16,11 @@ function AllBooks() {
   const user = JSON.parse(localStorage.getItem("user"));
   const id_perdoruesi = user?.id_perdoruesi || user?.id || null;
 
-  // 🔹 funksion për popup
   const showPopup = (message, color = "#28a745") => {
     setPopup({ show: true, message, color });
     setTimeout(() => setPopup({ show: false, message: "" }), 4000);
   };
 
-  // 🔹 merr librat nga API
   const fetchBooks = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/libra");
@@ -44,7 +42,7 @@ function AllBooks() {
     fetchBooks();
   }, []);
 
-  // 🔹 filtro sipas kërkimit
+
   useEffect(() => {
     const q = search.toLowerCase();
     const results = books.filter(
@@ -56,7 +54,7 @@ function AllBooks() {
     setFilteredBooks(results);
   }, [search, books]);
 
-  // 🔹 huazo libër
+  
   const handleHuazo = async (id_liber) => {
     if (!id_perdoruesi) {
       alert("Ju duhet të jeni të kyçur për të huazuar libra!");
@@ -85,7 +83,7 @@ function AllBooks() {
     }
   };
 
-  // 🔹 rezervim libri (me përmirësim: mbyllet modal)
+  
   const handleRezervo = async (id_liber, data) => {
     if (!id_perdoruesi) {
       alert("Ju duhet të jeni të kyçur për të rezervuar libra!");
@@ -102,16 +100,15 @@ function AllBooks() {
       if (!res.ok) throw new Error(dataRes.message);
 
       showPopup(`📖 ${dataRes.message}`, "#28a745");
-      setShowDatesModal(false);  // ✅ mbyll kalendarin
-      setBookDates([]);          // ✅ pastro datat
-      // (opsionale) dërgon automatikisht te dashboard:
-      // window.location.href = "/dashboard";
+      setShowDatesModal(false);  
+      setBookDates([]);          
+   
     } catch (err) {
       showPopup(err.message, "#dc3545");
     }
   };
 
-  // 🔹 merr datat e zëna për një libër
+  
   const fetchDatatEZena = async (id_liber) => {
     try {
       const res = await fetch(`http://localhost:5000/api/huazime/datat/${id_liber}`);
@@ -126,7 +123,7 @@ function AllBooks() {
 
   return (
     <div className="books-container" style={{ padding: "2rem" }}>
-      {/* 🔍 Kërkimi */}
+      
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
         <input
           type="text"
@@ -143,7 +140,7 @@ function AllBooks() {
         />
       </div>
 
-      {/* 📚 Lista e librave */}
+     
       {Array.isArray(filteredBooks) && filteredBooks.length > 0 ? (
         <div
           className="books-list"

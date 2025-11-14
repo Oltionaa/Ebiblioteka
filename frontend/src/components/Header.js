@@ -2,8 +2,9 @@ import { Link } from "react-router-dom";
 import "../styles/style.css";
 
 function Header() {
-  const roli = localStorage.getItem("roli"); 
-  const isLoggedIn = localStorage.getItem("user") !== null;
+  const user = JSON.parse(localStorage.getItem("user"));
+  const roli = user?.roli || null;
+  const isLoggedIn = !!user;
 
   const handleLogout = () => {
     localStorage.clear();
@@ -29,28 +30,34 @@ function Header() {
 
           {isLoggedIn ? (
             <>
-              
+              {/* Admin Panel */}
               {roli === "Admin" && (
                 <Link to="/admin" className="btn btn-primary">
                   👑 Admin Panel
                 </Link>
               )}
 
-        
+              {/* Bibliotekar Dashboard */}
               {roli === "Bibliotekar" && (
                 <Link to="/dashboard-bibliotekar" className="btn btn-primary">
                   👤 Profili im
                 </Link>
               )}
 
-          
+              {/* Perdorues Dashboard */}
+              {roli === "Perdorues" || roli === "User" ? (
+                <Link to="/dashboard" className="btn btn-primary">
+                  👤 Profili im
+                </Link>
+              ) : null}
+
+              {/* Logout */}
               <button onClick={handleLogout} className="btn btn-primary">
                 Dil
               </button>
             </>
           ) : (
             <>
-       
               <Link to="/login" className="btn btn-outline">Kyçu</Link>
               <Link to="/signup" className="btn btn-primary">Regjistrohu</Link>
             </>
