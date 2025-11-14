@@ -289,7 +289,7 @@ body {
   font-weight: 700;
 }
 
-/* CTA Section */
+
 .cta {
   padding: 5rem 0;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -503,7 +503,7 @@ body {
 }
 
 .signup-box h2 {
-  color: #38b29e; /* mint e errët */
+  color: #38b29e; 
   margin-bottom: 24px;
 }
 
@@ -673,7 +673,7 @@ body {
 .cancel-btn {
   background: #999;
 }
-/* ==== PROFIL BUTTON FOR BIBLIOTEKAR ==== */
+
 
 .profile-btn {
   display: flex;
