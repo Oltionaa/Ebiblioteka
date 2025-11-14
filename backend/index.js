@@ -5,6 +5,8 @@ import authRoutes from "./routes/authRoutes.js";
 import liberRoutes from "./routes/liberRoutes.js";
 import huazimRoutes from "./routes/huazimRoutes.js";
 import rezervimRoutes from "./routes/rezervimRoutes.js";
+import logRoutes from "./routes/logRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";   // <-- KËTU !!!
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/libra", liberRoutes);
 app.use("/api/huazime", huazimRoutes);
 app.use("/api/rezervime", rezervimRoutes);
+app.use("/api/logs", logRoutes);
+app.use("/api/admin", adminRoutes);               
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Serveri po funksionon në portin ${PORT}`));
