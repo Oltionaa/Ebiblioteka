@@ -3,7 +3,8 @@ import HomePage from "./pages/HomePage";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import UserDashboard from "./pages/UserDashboard";
-import LibrarianDashboard from "./pages/LibrarianDashboard";
+import LibrarianDashboard from "./pages/LibrarianDashboard.jsx";
+
 
 import "./styles/style.css";
 
