@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
+import "../styles/searchBooks.css";
 import "react-calendar/dist/Calendar.css";
 
 function AllBooks() {
@@ -29,7 +30,7 @@ function AllBooks() {
         setBooks(data);
         setFilteredBooks(data);
       } else {
-        console.error("❌ API nuk ktheu array:", data);
+        console.error("API nuk ktheu array:", data);
         setBooks([]);
         setFilteredBooks([]);
       }
@@ -197,7 +198,6 @@ function AllBooks() {
               <p>Kopje gjithsej: <b>{book.total_kopje}</b></p>
               <p>Kopje të lira: <b>{book.kopje_lira}</b></p>
 
-              {/* 🔹 Butonat */}
               {showDatePicker === book.id_liber ? (
                 <div style={{ marginTop: "1rem", textAlign: "center" }}>
                   <input
@@ -278,7 +278,6 @@ function AllBooks() {
         <p style={{ textAlign: "center" }}>Nuk ka libra që përputhen me kërkimin.</p>
       )}
 
-      {/* 💬 Popup */}
       {popup.show && (
         <div
           style={{
@@ -316,7 +315,6 @@ function AllBooks() {
         </div>
       )}
 
-      {/* 📅 Modal për kalendarin */}
       {showDatesModal && (
         <div
           style={{

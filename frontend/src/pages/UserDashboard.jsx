@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 function UserDashboard() {
   const [huazimet, setHuazimet] = useState([]);
@@ -6,7 +6,11 @@ function UserDashboard() {
   const [njoftime, setNjoftime] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const [popup, setPopup] = useState({ show: false, message: "", color: "#28a745" });
+  const [popup, setPopup] = useState({
+    show: false,
+    message: "",
+    color: "#28a745",
+  });
 
   const user = JSON.parse(localStorage.getItem("user"));
   const id_perdoruesi = user?.id_perdoruesi;
@@ -18,13 +22,24 @@ function UserDashboard() {
     return date.toISOString().split("T")[0];
   };
 
-  const fetchData = async () => {
+  const showPopup = useCallback((message, color = "#28a745") => {
+    setPopup({ show: true, message, color });
+    setTimeout(() => setPopup({ show: false, message: "" }), 3000);
+  }, []);
+
+  const fetchData = useCallback(async () => {
     if (!id_perdoruesi) return;
 
     try {
-      const resHuazime = await fetch(`http://localhost:5000/api/huazime/user/${id_perdoruesi}`);
-      const resRezervime = await fetch(`http://localhost:5000/api/rezervime/user/${id_perdoruesi}`);
-      const resNjoftime = await fetch(`http://localhost:5000/api/njoftime/${id_perdoruesi}`);
+      const resHuazime = await fetch(
+        `http://localhost:5000/api/huazime/user/${id_perdoruesi}`
+      );
+      const resRezervime = await fetch(
+        `http://localhost:5000/api/rezervime/user/${id_perdoruesi}`
+      );
+      const resNjoftime = await fetch(
+        `http://localhost:5000/api/njoftime/${id_perdoruesi}`
+      );
 
       const dataHuazime = await resHuazime.json();
       const dataRezervime = await resRezervime.json();
@@ -37,16 +52,11 @@ function UserDashboard() {
       console.error("Gabim:", err);
       showPopup("Gabim gjatë marrjes së të dhënave!", "#dc3545");
     }
-  };
+  }, [id_perdoruesi, showPopup]);
 
   useEffect(() => {
     fetchData();
-  }, []);
-
-  const showPopup = (message, color = "#28a745") => {
-    setPopup({ show: true, message, color });
-    setTimeout(() => setPopup({ show: false, message: "" }), 3000);
-  };
+  }, [fetchData]);
 
   const ktheLiber = async (id_liber) => {
     if (!window.confirm("A dëshiron ta kthesh librin?")) return;
@@ -72,9 +82,12 @@ function UserDashboard() {
     if (!window.confirm("A je i sigurt për fshirje?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/rezervime/fshi/${id_rezervimi}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/rezervime/fshi/${id_rezervimi}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
@@ -91,11 +104,14 @@ function UserDashboard() {
     if (!dataRe) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/rezervime/ndrysho/${id_rezervimi}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: dataRe }),
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/rezervime/ndrysho/${id_rezervimi}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: dataRe }),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
@@ -113,7 +129,7 @@ function UserDashboard() {
         marginBottom: "3rem",
         background: "#fff",
         borderRadius: "12px",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
         padding: "1.5rem",
       }}
     >
@@ -122,7 +138,13 @@ function UserDashboard() {
       {data.length === 0 ? (
         <p style={{ textAlign: "center" }}>Nuk ka të dhëna.</p>
       ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            textAlign: "center",
+          }}
+        >
           <thead>
             <tr style={{ background: "#007bff", color: "white" }}>
               <th>#</th>
@@ -148,13 +170,21 @@ function UserDashboard() {
                     <>
                       <button
                         onClick={() => ndryshoDate(row.id_rezervimi)}
-                        style={{ marginRight: "8px", background: "#ffc107", padding: "6px 10px" }}
+                        style={{
+                          marginRight: "8px",
+                          background: "#ffc107",
+                          padding: "6px 10px",
+                        }}
                       >
                         Ndrysho
                       </button>
                       <button
                         onClick={() => fshiRezervim(row.id_rezervimi)}
-                        style={{ background: "#dc3545", color: "white", padding: "6px 10px" }}
+                        style={{
+                          background: "#dc3545",
+                          color: "white",
+                          padding: "6px 10px",
+                        }}
                       >
                         Fshi
                       </button>
@@ -183,12 +213,16 @@ function UserDashboard() {
 
   return (
     <div style={{ padding: "2rem", background: "#f5f5f5", minHeight: "100vh" }}>
-      
-      {/* 🔔 IKONA E NJOFTIMEVE */}
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
         <button
           onClick={() => setShowNotifications(!showNotifications)}
-          style={{ background: "transparent", border: "none", fontSize: "26px", cursor: "pointer", position: "relative" }}
+          style={{
+            background: "transparent",
+            border: "none",
+            fontSize: "26px",
+            cursor: "pointer",
+            position: "relative",
+          }}
         >
           🔔
           {njoftime.length > 0 && (
@@ -210,7 +244,6 @@ function UserDashboard() {
         </button>
       </div>
 
-      {/* PANELI I NJOFTIMEVE */}
       {showNotifications && (
         <div
           style={{
@@ -218,7 +251,7 @@ function UserDashboard() {
             padding: "1rem",
             borderRadius: "12px",
             marginBottom: "2rem",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
           }}
         >
           <h2>Njoftimet</h2>
@@ -245,7 +278,9 @@ function UserDashboard() {
         </div>
       )}
 
-      <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>📚 Dashboard i Përdoruesit</h1>
+      <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>
+        📚 Dashboard i Përdoruesit
+      </h1>
 
       {renderTable("Librat e Huazuar", huazimet, "huazim")}
       {renderTable("Librat e Rezervuar", rezervimet, "rezervim")}

@@ -67,9 +67,9 @@ export const ktheLiber = async (req, res) => {
     res.status(500).json({ message: "Gabim në server gjatë kthimit të librit." });
   }
 };
-
 export const getDatatEZena = async (req, res) => {
   const { id_liber } = req.params;
+
   try {
     const [huazime] = await pool.query(
       `SELECT dataHuazimit AS start, dataKthimit AS end
@@ -78,9 +78,9 @@ export const getDatatEZena = async (req, res) => {
       [id_liber]
     );
     const [rezervime] = await pool.query(
-      `SELECT dataRezervuar AS start, dataRezervuar AS end
+      `SELECT data AS start, data AS end
        FROM rezervim
-       WHERE id_liber = ? AND (statusi = 'aktiv' OR statusi = 'rezervuar')`,
+       WHERE id_liber = ?`,
       [id_liber]
     );
 
@@ -95,6 +95,7 @@ export const getDatatEZena = async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë marrjes së datave të zëna." });
   }
 };
+
 
 export const getHuazimetByUser = async (req, res) => {
   const { id } = req.params;

@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import heroImg from "../assets/hero.jpg";
+
 
 
 
@@ -13,7 +15,9 @@ function Hero() {
           shërbimeve bibliotekare. Kërkoni, rezervoni dhe lexoni libra me vetëm
           disa klikime.
         </p>
-        <button className="btn-primary">Regjistrohu</button>
+        <Link to="/signup" className="btn btn-primary hero-btn">
+        Regjistrohu
+      </Link>
       </div>
 
       <div className="hero-image">

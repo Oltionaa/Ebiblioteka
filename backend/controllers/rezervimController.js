@@ -1,8 +1,5 @@
 import pool from "../utils/db.js";
 
-/* ===========================================================
-   REZERVO LIBËR
-=========================================================== */
 export const rezervoLiber = async (req, res) => {
   const { id_perdoruesi, id_liber, data } = req.body;
 
@@ -51,9 +48,6 @@ export const rezervoLiber = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   REZERVIMET E NJE PËRDORUESI
-=========================================================== */
 export const getRezervimetByUser = async (req, res) => {
   const { id } = req.params;
 
@@ -79,9 +73,6 @@ export const getRezervimetByUser = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   FSHE REZERVIM
-=========================================================== */
 export const fshiRezervim = async (req, res) => {
   const { id } = req.params;
 
@@ -94,9 +85,6 @@ export const fshiRezervim = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   NDRYSHO DATEN E REZERVIMIT
-=========================================================== */
 export const ndryshoRezervim = async (req, res) => {
   const { id } = req.params;
   const { data } = req.body;
@@ -113,9 +101,6 @@ export const ndryshoRezervim = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   REZERVIMET PËR BIBLIOTEKARIN
-=========================================================== */
 export const getAllRezervimet = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -141,9 +126,6 @@ export const getAllRezervimet = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   MIRATO REZERVIM (ME NJOFTIM)
-=========================================================== */
 export const miratoRezervim = async (req, res) => {
   const { id } = req.params;
 
@@ -172,9 +154,6 @@ export const miratoRezervim = async (req, res) => {
   }
 };
 
-/* ===========================================================
-   REFUZO REZERVIM (ME NJOFTIM)
-=========================================================== */
 export const refuzoRezervim = async (req, res) => {
   const { id } = req.params;
 
@@ -193,7 +172,7 @@ export const refuzoRezervim = async (req, res) => {
 
     await pool.query(
       "INSERT INTO njoftim (id_perdoruesi, mesazh, tipi) VALUES (?, ?, ?)",
-      [userId, "Rezervimi juaj u REFUZUA ❌", "error"]
+      [userId, "Rezervimi juaj u REFUZUA ", "error"]
     );
 
     res.json({ message: "Rezervimi u refuzua!" });

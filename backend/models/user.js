@@ -1,7 +1,14 @@
 import db from "../utils/db.js";
 
 class User {
-  constructor(emri, mbiemri, email, fjalekalimi, roli = "User", numriKarteLexuesi = null) {
+  constructor(
+    emri,
+    mbiemri,
+    email,
+    fjalekalimi,
+    roli = "Perdorues",
+    numriKarteLexuesi = null
+  ) {
     this.emri = emri;
     this.mbiemri = mbiemri;
     this.email = email;
@@ -10,24 +17,20 @@ class User {
     this.numriKarteLexuesi = numriKarteLexuesi;
   }
 
-  // gjenero numër rastësor: LEX-284193
   static gjeneroRandom() {
     return `LEX-${Math.floor(100000 + Math.random() * 900000)}`;
   }
 
-  // gjenero numër DHE kontrollo unikalitetin në DB
   static async gjeneroNumrinUnik() {
     let numri;
 
     while (true) {
       numri = this.gjeneroRandom();
-
       const [rows] = await db.execute(
         "SELECT 1 FROM perdoruesi WHERE numriKarteLexuesi = ?",
         [numri]
       );
-
-      if (rows.length === 0) break; // gjetëm numër unik
+      if (rows.length === 0) break;
     }
 
     return numri;
@@ -47,7 +50,7 @@ class User {
         this.email,
         this.fjalekalimi,
         this.roli,
-        this.numriKarteLexuesi
+        this.numriKarteLexuesi,
       ]
     );
 
@@ -56,12 +59,18 @@ class User {
   }
 
   static async findByEmail(email) {
-    const [rows] = await db.execute("SELECT * FROM perdoruesi WHERE email = ?", [email]);
+    const [rows] = await db.execute(
+      "SELECT * FROM perdoruesi WHERE email = ?",
+      [email]
+    );
     return rows[0] || null;
   }
 
   static async findById(id) {
-    const [rows] = await db.execute("SELECT * FROM perdoruesi WHERE id_perdoruesi = ?", [id]);
+    const [rows] = await db.execute(
+      "SELECT * FROM perdoruesi WHERE id_perdoruesi = ?",
+      [id]
+    );
     return rows[0] || null;
   }
 }

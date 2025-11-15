@@ -22,3 +22,23 @@
   padding: 10px;
   border: 1px solid #ddd;
 }
+.zene {
+  background-color: #ff4d4d !important;
+  color: white !important;
+  border-radius: 50% !important;
+}
+.react-calendar__tile.zene {
+  background-color: #ff4d4d !important;
+  color: white !important;
+  border-radius: 50% !important;
+}
+
+.react-calendar__tile.lire {
+  background-color: #8df59b !important;
+  color: black !important;
+  border-radius: 50% !important;
+}
+
+.react-calendar__month-view__days__day {
+  position: relative !important;
+}

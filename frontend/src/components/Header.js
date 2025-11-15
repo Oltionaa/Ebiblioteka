@@ -16,7 +16,7 @@ function Header() {
       <div className="header-content">
 
         <Link to="/" className="logo">
-          📚 EbibloteKa
+          📚 Ebibloteka
         </Link>
 
         <nav className="nav">
@@ -30,29 +30,25 @@ function Header() {
 
           {isLoggedIn ? (
             <>
-              {/* Admin Panel */}
               {roli === "Admin" && (
-                <Link to="/admin" className="btn btn-primary">
-                  👑 Admin Panel
+                <Link to="/admin" className="btn btn-green">
+                  Admin Panel
                 </Link>
               )}
 
-              {/* Bibliotekar Dashboard */}
               {roli === "Bibliotekar" && (
-                <Link to="/dashboard-bibliotekar" className="btn btn-primary">
+                <Link to="/dashboard-bibliotekar" className="btn btn-blue">
                   👤 Profili im
                 </Link>
               )}
 
-              {/* Perdorues Dashboard */}
-              {roli === "Perdorues" || roli === "User" ? (
-                <Link to="/dashboard" className="btn btn-primary">
+              {(roli === "Perdorues") && (
+                <Link to="/dashboard" className="btn btn-blue">
                   👤 Profili im
                 </Link>
-              ) : null}
+              )}
 
-              {/* Logout */}
-              <button onClick={handleLogout} className="btn btn-primary">
+              <button onClick={handleLogout} className="btn btn-red">
                 Dil
               </button>
             </>

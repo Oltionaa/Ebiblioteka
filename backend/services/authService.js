@@ -10,7 +10,15 @@ class AuthService {
     if (existingUser) throw new Error("Ky email ekziston tashmë!");
 
     const hashedPassword = await bcrypt.hash(fjalekalimi, 10);
-    const user = new User(emri, mbiemri, email, hashedPassword);
+
+    const user = new User(
+      emri,
+      mbiemri,
+      email,
+      hashedPassword,
+      "Perdorues" 
+    );
+
     await user.save();
 
     const token = jwt.sign(
@@ -22,7 +30,7 @@ class AuthService {
     return {
       token,
       user: {
-        id_perdoruesi: user.id_perdoruesi, 
+        id_perdoruesi: user.id_perdoruesi,
         emri: user.emri,
         mbiemri: user.mbiemri,
         email: user.email,

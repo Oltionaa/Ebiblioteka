@@ -20,9 +20,8 @@ function Login() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      // Ruaj user-in e kyçur
       localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("roli", data.user.roli);  // p.sh Bibliotekar ose User
+      localStorage.setItem("roli", data.user.roli); 
       localStorage.setItem("emri", data.user.emri);
 
       alert("Kyçu me sukses!");
