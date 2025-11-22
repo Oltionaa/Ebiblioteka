@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function CTA() {
   return (
     <section className="cta">
@@ -8,7 +10,9 @@ function CTA() {
             Bashkohu me mijëra lexues që përdorin Ebiblotekën çdo ditë. Regjistrohu falas dhe fillo të kërkosh librat e
             tua të preferuar.
           </p>
-          <button className="btn btn-white btn-lg">Regjistrohu Tani</button>
+          <Link to="/signup" className="btn btn-white btn-lg">
+            Regjistrohu Tani
+          </Link>
         </div>
       </div>
     </section>

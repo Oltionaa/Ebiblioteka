@@ -21,9 +21,9 @@ function Header() {
 
         <nav className="nav">
           <Link to="/">Ballina</Link>
-          <Link to="/features">Veçoritë</Link>
-          <Link to="/about">Rreth Nesh</Link>
-          <Link to="/contact">Kontakti</Link>
+          <Link to="/aboutus">Rreth Nesh</Link>
+          <a href="#rreth" className="scroll-link">Rreth Platformës</a>
+          <a href="#kontakti" className="scroll-link">Kontakti</a>
         </nav>
 
         <div className="header-actions">

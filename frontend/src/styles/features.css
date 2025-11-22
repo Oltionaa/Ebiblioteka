@@ -1,0 +1,101 @@
+.features {
+  padding: 80px 0;
+  background: #f8f9fa;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-header h2 {
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.section-header p {
+  color: #555;
+  margin-top: 6px;
+}
+
+.carousel-wrapper {
+  width: 90%;
+  margin: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel {
+  display: flex;
+  transition: transform 0.6s ease;
+}
+
+.card {
+  flex: 0 0 33.33%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  transition: 0.3s ease;
+}
+
+.card .icon {
+  font-size: 42px;
+  background: #eef4ff;
+  padding: 20px;
+  border-radius: 16px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.card h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.card p {
+  color: #555;
+  line-height: 1.45;
+}
+.arrow {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  font-size: 40px;
+  background: white;
+  border: none;
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.arrow:hover {
+  background: #ececec;
+}
+
+.arrow.left {
+  left: -10px;
+}
+
+.arrow.right {
+  right: -10px;
+}
+
+@media (max-width: 900px) {
+  .card {
+    flex: 0 0 50%;
+  }
+}
+
+@media (max-width: 600px) {
+  .card {
+    flex: 0 0 100%;
+  }
+}

@@ -1,0 +1,144 @@
+.about {
+  padding: 80px 0;
+  background: #f9fafb;
+}
+
+.about .section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.about .section-header h2 {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+}
+
+.about .section-header p {
+  color: #6b7280;
+}
+
+.roles-grid.flip-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.flip-card {
+  perspective: 1200px;
+  cursor: pointer;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 270px;
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+}
+
+.flip-card.is-flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+.flip-card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  background: white;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.flip-card-front {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+  justify-content: space-between;
+}
+.role-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #22c55e1a, #22c55e33);
+  color: #16a34a;
+}
+
+.flip-card-front h3,
+.flip-card-back h3 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+}
+
+.role-short {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+.flip-card-back ul {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+
+.flip-card-back li {
+  font-size: 0.95rem;
+  color: #4b5563;
+  margin-bottom: 6px;
+  position: relative;
+  padding-left: 16px;
+}
+
+.flip-card-back li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #22c55e;
+}
+.flip-btn {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.9rem;
+  background: #111827;
+  color: white;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.flip-btn:hover {
+  background: #030712;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+}
+
+.back-btn {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.back-btn:hover {
+  background: #e5e7eb;
+  box-shadow: none;
+}
+.about-hint {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .flip-card-inner {
+    height: 300px;
+  }
+}
