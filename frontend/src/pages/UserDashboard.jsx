@@ -100,28 +100,29 @@ function UserDashboard() {
   };
 
   const ndryshoDate = async (id_rezervimi) => {
-    const dataRe = prompt("Shkruaj datën e re (YYYY-MM-DD):");
-    if (!dataRe) return;
+  const dataRe = prompt("Shkruaj datën e re (YYYY-MM-DD):");
+  if (!dataRe) return;
 
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/rezervime/ndrysho/${id_rezervimi}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: dataRe }),
-        }
-      );
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/rezervime/ndrysho/${id_rezervimi}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dataRezervuar: dataRe }), // ⭐ FIX HERE
+      }
+    );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
 
-      showPopup("Data u ndryshua me sukses!", "#28a745");
-      fetchData();
-    } catch {
-      showPopup("Gabim gjatë ndryshimit!", "#dc3545");
-    }
-  };
+    showPopup("Data u ndryshua me sukses!", "#28a745");
+    fetchData();
+  } catch {
+    showPopup("Gabim gjatë ndryshimit!", "#dc3545");
+  }
+};
+
 
   const renderTable = (title, data, type) => (
     <div

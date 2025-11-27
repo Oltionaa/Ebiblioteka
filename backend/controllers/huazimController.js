@@ -24,7 +24,7 @@ export const huazoLiber = async (req, res) => {
     );
 
     res.json({
-      message: "📘 Libri u huazua me sukses!",
+      message: "Libri u huazua me sukses!",
       id_kopja,
       dataHuazimit: new Date().toISOString().split("T")[0],
       dataKthimit,
@@ -67,6 +67,7 @@ export const ktheLiber = async (req, res) => {
     res.status(500).json({ message: "Gabim në server gjatë kthimit të librit." });
   }
 };
+
 export const getDatatEZena = async (req, res) => {
   const { id_liber } = req.params;
 
@@ -77,25 +78,25 @@ export const getDatatEZena = async (req, res) => {
        WHERE id_liber = ? AND statusi = 'aktive'`,
       [id_liber]
     );
+
     const [rezervime] = await pool.query(
-      `SELECT data AS start, data AS end
+      `SELECT dataRezervuar AS start, dataRezervuar AS end
        FROM rezervim
-       WHERE id_liber = ?`,
+       WHERE id_liber = ? AND (statusi='ne_pritje' OR statusi='miratuar')`,
       [id_liber]
     );
 
     const combined = [...huazime, ...rezervime].map((d) => ({
-      start: new Date(d.start).toISOString().split("T")[0],
-      end: new Date(d.end).toISOString().split("T")[0],
+      start: d.start,
+      end: d.end
     }));
 
-    res.json(combined);
+    res.json(Array.isArray(combined) ? combined : []);
   } catch (err) {
     console.error("Gabim gjatë marrjes së datave të zëna:", err);
-    res.status(500).json({ message: "Gabim gjatë marrjes së datave të zëna." });
+    res.json([]); 
   }
 };
-
 
 export const getHuazimetByUser = async (req, res) => {
   const { id } = req.params;
@@ -122,4 +123,3 @@ export const getHuazimetByUser = async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë marrjes së huazimeve." });
   }
 };
-

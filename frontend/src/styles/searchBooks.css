@@ -1,44 +1,26 @@
-.search-books {
-  padding: 20px;
-}
-
-.search-books input {
-  width: 60%;
-  padding: 8px;
-  margin-right: 10px;
-}
-
-.search-books button {
-  padding: 8px 12px;
-}
-
-.search-books ul {
-  list-style: none;
-  padding: 0;
-}
-
-.search-books li {
-  margin: 10px 0;
-  padding: 10px;
-  border: 1px solid #ddd;
-}
-.zene {
+.react-calendar__tile.zene,
+.react-calendar__month-view__days__day.zene {
   background-color: #ff4d4d !important;
   color: white !important;
   border-radius: 50% !important;
-}
-.react-calendar__tile.zene {
-  background-color: #ff4d4d !important;
-  color: white !important;
-  border-radius: 50% !important;
+  font-weight: bold !important;
 }
 
-.react-calendar__tile.lire {
+.react-calendar__tile.lire,
+.react-calendar__month-view__days__day.lire {
   background-color: #8df59b !important;
   color: black !important;
   border-radius: 50% !important;
+  font-weight: bold !important;
 }
 
-.react-calendar__month-view__days__day {
-  position: relative !important;
+.react-calendar__tile:hover {
+  opacity: 0.85;
+}
+
+.react-calendar__tile--active {
+  background-color: #ffd84a !important;
+  color: black !important;
+  border-radius: 50% !important;
+  font-weight: bold;
 }

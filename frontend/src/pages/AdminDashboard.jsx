@@ -100,10 +100,18 @@ function Overview() {
     </div>
   );
 }
-
 function UserManagement() {
   const [users, setUsers] = useState([]);
   const [filterRole, setFilterRole] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const [newUser, setNewUser] = useState({
+    emri: "",
+    mbiemri: "",
+    email: "",
+    fjalekalimi: "",
+    roli: "Perdorues",
+  });
 
   const loadUsers = async () => {
     const res = await fetch("http://localhost:5000/api/admin/users");
@@ -114,6 +122,25 @@ function UserManagement() {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  const shtoPerdorues = async () => {
+    if (!newUser.emri || !newUser.email || !newUser.fjalekalimi) {
+      alert("Plotëso të gjitha fushat!");
+      return;
+    }
+
+    const res = await fetch("http://localhost:5000/api/admin/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser),
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    setShowAddModal(false);
+    setNewUser({ emri: "", mbiemri: "", email: "", fjalekalimi: "", roli: "Perdorues" });
+    loadUsers();
+  };
 
   return (
     <div>
@@ -130,6 +157,14 @@ function UserManagement() {
         <option value="Perdorues">Përdorues</option>
       </select>
 
+      <button
+        className="btn-add"
+        style={{ marginLeft: "12px" }}
+        onClick={() => setShowAddModal(true)}
+      >
+         Shto Përdorues
+      </button>
+
       <table className="admin-table">
         <thead>
           <tr>
@@ -142,21 +177,51 @@ function UserManagement() {
 
         <tbody>
           {users
-            .filter((u) =>
-              filterRole === "all" ? true : u.roli === filterRole
-            )
+            .filter((u) => filterRole === "all" || u.roli === filterRole)
             .map((u) => (
               <tr key={u.id_perdoruesi}>
                 <td>{u.id_perdoruesi}</td>
-                <td>
-                  {u.emri} {u.mbiemri}
-                </td>
+                <td>{u.emri} {u.mbiemri}</td>
                 <td>{u.email}</td>
                 <td>{u.roli}</td>
               </tr>
             ))}
         </tbody>
       </table>
+
+      {showAddModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h2>Shto Përdorues</h2>
+
+            <input placeholder="Emri"
+              onChange={(e) => setNewUser({ ...newUser, emri: e.target.value })} />
+
+            <input placeholder="Mbiemri"
+              onChange={(e) => setNewUser({ ...newUser, mbiemri: e.target.value })} />
+
+            <input placeholder="Email"
+              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+
+            <input type="password" placeholder="Fjalëkalimi"
+              onChange={(e) => setNewUser({ ...newUser, fjalekalimi: e.target.value })} />
+
+            <select
+              value={newUser.roli}
+              onChange={(e) => setNewUser({ ...newUser, roli: e.target.value })}
+            >
+              <option value="Admin">Admin</option>
+              <option value="Bibliotekar">Bibliotekar</option>
+              <option value="Perdorues">Përdorues</option>
+            </select>
+
+            <div className="modal-actions">
+              <button className="save-btn" onClick={shtoPerdorues}>Ruaj</button>
+              <button className="cancel-btn" onClick={() => setShowAddModal(false)}>Anulo</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

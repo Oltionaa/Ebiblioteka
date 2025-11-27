@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
-import "../styles/searchBooks.css";
 import "react-calendar/dist/Calendar.css";
+import "../styles/searchBooks.css";
 
 function AllBooks() {
   const [books, setBooks] = useState([]);
@@ -30,7 +30,7 @@ function AllBooks() {
         setBooks(data);
         setFilteredBooks(data);
       } else {
-        console.error("API nuk ktheu array:", data);
+        console.error(" API nuk ktheu array:", data);
         setBooks([]);
         setFilteredBooks([]);
       }
@@ -84,31 +84,35 @@ function AllBooks() {
     }
   };
 
-  
   const handleRezervo = async (id_liber, data) => {
-    if (!id_perdoruesi) {
-      alert("Ju duhet të jeni të kyçur për të rezervuar libra!");
-      return;
-    }
+  if (!id_perdoruesi) {
+    alert("Ju duhet të jeni të kyçur për të rezervuar libra!");
+    return;
+  }
 
-    try {
-      const res = await fetch("http://localhost:5000/api/rezervime/rezervo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_liber, id_perdoruesi, data }),
-      });
-      const dataRes = await res.json();
-      if (!res.ok) throw new Error(dataRes.message);
+  try {
+    const res = await fetch("http://localhost:5000/api/rezervime/rezervo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        id_liber, 
+        id_perdoruesi, 
+        dataRezervuar: data     
+      }),
+    });
 
-      showPopup(`📖 ${dataRes.message}`, "#28a745");
-      setShowDatesModal(false);  
-      setBookDates([]);          
-   
-    } catch (err) {
-      showPopup(err.message, "#dc3545");
-    }
-  };
+    const dataRes = await res.json();
+    if (!res.ok) throw new Error(dataRes.message);
 
+    showPopup(`📅 Rezervimi u bë për datën ${data}!`, "#28a745");
+
+    setShowDatesModal(false);
+    setBookDates([]);
+
+  } catch (err) {
+    showPopup(err.message, "#dc3545");
+  }
+};
   
   const fetchDatatEZena = async (id_liber) => {
     try {
@@ -267,7 +271,7 @@ function AllBooks() {
                       cursor: "pointer",
                     }}
                   >
-                    Shiko datat
+                    Rezervo
                   </button>
                 </div>
               )}
@@ -341,30 +345,34 @@ function AllBooks() {
           >
             <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>📅 Datat e librave</h3>
 
-            <Calendar
-              tileClassName={({ date }) => {
-                const isZene = bookDates.some((d) => {
-                  const start = new Date(d.start);
-                  const end = new Date(d.end);
-                  return date >= start && date <= end;
-                });
-                return isZene ? "zene" : "lire";
-              }}
-              onClickDay={(value) => {
-                const selected = value.toISOString().split("T")[0];
-                const isZene = bookDates.some((d) => {
-                  const start = new Date(d.start);
-                  const end = new Date(d.end);
-                  return value >= start && value <= end;
-                });
+                    <Calendar
+           className="custom-calendar"
+  tileClassName={({ date }) => {
+    const isZene = bookDates.some((d) => {
+      const start = new Date(d.start);
+      const end = new Date(d.end);
+      return date >= start && date <= end;
+    });
 
-                if (isZene) {
-                  alert("Kjo datë është e zënë!");
-                } else if (window.confirm(`📖 Dëshiron ta rezervosh librin më: ${selected}?`)) {
-                  handleRezervo(selectedBookId, selected);
-                }
-              }}
-            />
+    return isZene ? "zene" : "lire";
+  }}
+  onClickDay={(value) => {
+    const selected = value.toISOString().split("T")[0];
+    const isZene = bookDates.some((d) => {
+      const start = new Date(d.start);
+      const end = new Date(d.end);
+      return value >= start && value <= end;
+    });
+
+    if (isZene) {
+      alert("Kjo datë është e zënë!");
+      return;
+    }
+    if (window.confirm(`📖 Dëshiron ta rezervosh librin më: ${selected}?`)) {
+      handleRezervo(selectedBookId, selected);
+    }
+  }}
+/>
 
             <div style={{ textAlign: "center", marginTop: "1rem" }}>
               <span style={{ color: "red", marginRight: "10px" }}>🔴 Zënë</span>
