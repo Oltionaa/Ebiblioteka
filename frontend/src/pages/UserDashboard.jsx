@@ -12,6 +12,45 @@ function UserDashboard() {
     color: "#28a745",
   });
 
+  // ===== Rekomandimet (SHTUAR) =====
+  const [rekomandimText, setRekomandimText] = useState("");
+  const [showRekomandimPopup, setShowRekomandimPopup] = useState(false);
+  const [idLiberPerRekomandim, setIdLiberPerRekomandim] = useState(null);
+
+  const hapRekomandimPopup = (id_liber) => {
+    setIdLiberPerRekomandim(id_liber);
+    setShowRekomandimPopup(true);
+  };
+
+  const ruajRekomandim = async () => {
+    if (!rekomandimText.trim()) {
+      showPopup("Ju lutem shkruani rekomandimin!", "#dc3545");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/rekomandime/shto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+  id_liber: idLiberPerRekomandim,
+  id_perdoruesi,
+  mesazhi: rekomandimText,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      showPopup("Rekomandimi u ruajt me sukses!", "#28a745");
+      setShowRekomandimPopup(false);
+      setRekomandimText("");
+    } catch (err) {
+      showPopup("Gabim gjatë ruajtjes!", "#dc3545");
+    }
+  };
+  // ==================================
+
   const user = JSON.parse(localStorage.getItem("user"));
   const id_perdoruesi = user?.id_perdoruesi;
 
@@ -84,9 +123,7 @@ function UserDashboard() {
     try {
       const res = await fetch(
         `http://localhost:5000/api/rezervime/fshi/${id_rezervimi}`,
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       );
 
       const data = await res.json();
@@ -100,29 +137,28 @@ function UserDashboard() {
   };
 
   const ndryshoDate = async (id_rezervimi) => {
-  const dataRe = prompt("Shkruaj datën e re (YYYY-MM-DD):");
-  if (!dataRe) return;
+    const dataRe = prompt("Shkruaj datën e re (YYYY-MM-DD):");
+    if (!dataRe) return;
 
-  try {
-    const res = await fetch(
-      `http://localhost:5000/api/rezervime/ndrysho/${id_rezervimi}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dataRezervuar: dataRe }), // ⭐ FIX HERE
-      }
-    );
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/rezervime/ndrysho/${id_rezervimi}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: dataRe }),
+        }
+      );
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
 
-    showPopup("Data u ndryshua me sukses!", "#28a745");
-    fetchData();
-  } catch {
-    showPopup("Gabim gjatë ndryshimit!", "#dc3545");
-  }
-};
-
+      showPopup("Data u ndryshua me sukses!", "#28a745");
+      fetchData();
+    } catch {
+      showPopup("Gabim gjatë ndryshimit!", "#dc3545");
+    }
+  };
 
   const renderTable = (title, data, type) => (
     <div
@@ -191,17 +227,33 @@ function UserDashboard() {
                       </button>
                     </>
                   ) : (
-                    <button
-                      onClick={() => ktheLiber(row.id_liber)}
-                      disabled={row.statusi === "kthyer"}
-                      style={{
-                        background: row.statusi === "kthyer" ? "#aaa" : "#17a2b8",
-                        color: "white",
-                        padding: "6px 10px",
-                      }}
-                    >
-                      {row.statusi === "kthyer" ? "Kthyer" : "Kthe librin"}
-                    </button>
+                    <>
+                      <button
+                        onClick={() => ktheLiber(row.id_liber)}
+                        disabled={row.statusi === "kthyer"}
+                        style={{
+                          background:
+                            row.statusi === "kthyer" ? "#aaa" : "#17a2b8",
+                          color: "white",
+                          padding: "6px 10px",
+                          marginRight: "8px",
+                        }}
+                      >
+                        {row.statusi === "kthyer" ? "Kthyer" : "Kthe librin"}
+                      </button>
+
+                      {/* ===== SHTIMI I BUTONIT PËR REKOMANDIM ===== */}
+                      <button
+                        onClick={() => hapRekomandimPopup(row.id_liber)}
+                        style={{
+                          background: "#ffc107",
+                          padding: "6px 10px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        Shkruaj Rekomandim
+                      </button>
+                    </>
                   )}
                 </td>
               </tr>
@@ -285,6 +337,73 @@ function UserDashboard() {
 
       {renderTable("Librat e Huazuar", huazimet, "huazim")}
       {renderTable("Librat e Rezervuar", rezervimet, "rezervim")}
+
+      {/* ===== POPUP PËR REKOMANDIM ===== */}
+      {showRekomandimPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "2rem",
+              borderRadius: "12px",
+              width: "400px",
+            }}
+          >
+            <h2>Shkruaj Rekomandim</h2>
+
+            <textarea
+              rows="4"
+              style={{ width: "100%", marginTop: "1rem" }}
+              value={rekomandimText}
+              onChange={(e) => setRekomandimText(e.target.value)}
+              placeholder="Shkruaj mendimin tënd për librin..."
+            ></textarea>
+
+            <div style={{ marginTop: "1rem", textAlign: "right" }}>
+              <button
+                onClick={() => setShowRekomandimPopup(false)}
+  style={{
+    padding: "6px 12px",
+    border: "1px solid #6c757d",
+    background: "white",
+    color: "#6c757d",
+    borderRadius: "4px",
+    marginRight: "10px",
+    cursor: "pointer",
+    fontWeight: "600"
+  }}
+  onMouseEnter={(e) => (e.target.style.background = "#e6e6e6")}
+  onMouseLeave={(e) => (e.target.style.background = "white")}
+>
+  Anulo
+              </button>
+              <button
+                onClick={ruajRekomandim}
+                style={{
+                  background: "#28a745",
+                  color: "white",
+                  padding: "6px 12px",
+                }}
+              >
+                Ruaj
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {popup.show && (
         <div
