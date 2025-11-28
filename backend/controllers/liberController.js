@@ -1,5 +1,4 @@
 import pool from "../utils/db.js";
-
 export const getAllLibra = async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -9,6 +8,7 @@ export const getAllLibra = async (req, res) => {
         l.autori,
         l.vitiBotimit,
         l.foto,
+        l.sasia,  
         IFNULL(k_total.total_kopje, 0) AS total_kopje,
         IFNULL(k_lira.kopje_lira, 0) AS kopje_lira
       FROM liber l
@@ -32,6 +32,7 @@ export const getAllLibra = async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë marrjes së librave." });
   }
 };
+
 
 export const shtoLiber = async (req, res) => {
   const { titulli, autori, vitiBotimit, foto, sasia } = req.body;

@@ -11,14 +11,28 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ message: "Gabim gjatë marrjes së përdoruesve." });
   }
 };
-
 export const addUser = async (req, res) => {
   const { emri, mbiemri, email, fjalekalimi, roli } = req.body;
 
   try {
+    const [last] = await pool.query(`
+      SELECT numriKarteLexuesi 
+      FROM perdoruesi 
+      ORDER BY id_perdoruesi DESC 
+      LIMIT 1
+    `);
+
+    let nextNumber = 1;
+    if (last.length > 0) {
+      nextNumber = parseInt(last[0].numriKarteLexuesi.split("-")[1]) + 1;
+    }
+
+    const newCard = `LEX-${String(nextNumber).padStart(6, "0")}`;
+
     await pool.query(
-      "INSERT INTO perdoruesi (emri, mbiemri, email, fjalekalimi, roli) VALUES (?, ?, ?, ?, ?)",
-      [emri, mbiemri, email, fjalekalimi, roli]
+      `INSERT INTO perdoruesi (emri, mbiemri, email, fjalekalimi, numriKarteLexuesi, roli)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [emri, mbiemri, email, fjalekalimi, newCard, roli]
     );
 
     await addLog(1, `Shtoi përdoruesin ${emri} ${mbiemri}`, "Admin", req.ip);
@@ -96,7 +110,6 @@ export const getMonthlyStats = async (req, res) => {
       GROUP BY MONTH(dataHuazimit)
     `);
 
-    // Krijo 12 muaj bosh
     const rezervime = {};
     const huazime = {};
     for (let i = 1; i <= 12; i++) {

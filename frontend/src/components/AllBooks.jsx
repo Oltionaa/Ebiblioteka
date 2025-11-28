@@ -8,14 +8,15 @@ function AllBooks() {
   const [search, setSearch] = useState("");
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(null);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(""); 
   const [popup, setPopup] = useState({ show: false, message: "", color: "#28a745" });
   const [bookDates, setBookDates] = useState([]);
   const [showDatesModal, setShowDatesModal] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
-  const id_perdoruesi = user?.id_perdoruesi || user?.id || null;
+  const id_perdoruesi = user?.id_perdoruesi; 
+
 
   const showPopup = (message, color = "#28a745") => {
     setPopup({ show: true, message, color });
@@ -30,12 +31,11 @@ function AllBooks() {
         setBooks(data);
         setFilteredBooks(data);
       } else {
-        console.error(" API nuk ktheu array:", data);
         setBooks([]);
         setFilteredBooks([]);
       }
-    } catch (err) {
-      console.error("Gabim gjatë marrjes së librave:", err);
+    } catch {
+      console.error("Gabim gjatë marrjes së librave!");
     }
   };
 
@@ -43,28 +43,21 @@ function AllBooks() {
     fetchBooks();
   }, []);
 
-
   useEffect(() => {
     const q = search.toLowerCase();
-    const results = books.filter(
-      (b) =>
-        b.titulli?.toLowerCase().includes(q) ||
-        b.autori?.toLowerCase().includes(q) ||
-        b.kategoria?.toLowerCase().includes(q)
+    setFilteredBooks(
+      books.filter(
+        (b) =>
+          b.titulli?.toLowerCase().includes(q) ||
+          b.autori?.toLowerCase().includes(q) ||
+          b.kategoria?.toLowerCase().includes(q)
+      )
     );
-    setFilteredBooks(results);
   }, [search, books]);
 
-  
   const handleHuazo = async (id_liber) => {
-    if (!id_perdoruesi) {
-      alert("Ju duhet të jeni të kyçur për të huazuar libra!");
-      return;
-    }
-    if (!selectedDate) {
-      alert("Zgjedh datën e kthimit!");
-      return;
-    }
+    if (!id_perdoruesi) return alert("Duhet të jeni i kyçur!");
+    if (!selectedDate) return alert("Zgjedh datën e kthimit!");
 
     try {
       const res = await fetch("http://localhost:5000/api/huazime/huazo", {
@@ -72,10 +65,11 @@ function AllBooks() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_liber, id_perdoruesi, dataKthimit: selectedDate }),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      showPopup(`📘 ${data.message}`, "#28a745");
+      showPopup(data.message);
       setShowDatePicker(null);
       setSelectedDate("");
       fetchBooks();
@@ -85,35 +79,30 @@ function AllBooks() {
   };
 
   const handleRezervo = async (id_liber, data) => {
-  if (!id_perdoruesi) {
-    alert("Ju duhet të jeni të kyçur për të rezervuar libra!");
-    return;
-  }
+    try {
+      const res = await fetch("http://localhost:5000/api/rezervime/rezervo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id_liber,
+          id_perdoruesi,
+          dataRezervimit: data,
+        }),
+      });
 
-  try {
-    const res = await fetch("http://localhost:5000/api/rezervime/rezervo", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        id_liber, 
-        id_perdoruesi, 
-        dataRezervuar: data     
-      }),
-    });
+      const dataRes = await res.json();
 
-    const dataRes = await res.json();
-    if (!res.ok) throw new Error(dataRes.message);
+      if (res.status === 409) return showPopup(dataRes.message, "#ffc107");
+      if (res.status === 400) return showPopup(dataRes.message, "#dc3545");
 
-    showPopup(`📅 Rezervimi u bë për datën ${data}!`, "#28a745");
+      showPopup(dataRes.message, "#28a745");
+      setShowDatesModal(false);
+      setBookDates([]);
+    } catch {
+      showPopup("Gabim në server!", "#dc3545");
+    }
+  };
 
-    setShowDatesModal(false);
-    setBookDates([]);
-
-  } catch (err) {
-    showPopup(err.message, "#dc3545");
-  }
-};
-  
   const fetchDatatEZena = async (id_liber) => {
     try {
       const res = await fetch(`http://localhost:5000/api/huazime/datat/${id_liber}`);
@@ -121,14 +110,13 @@ function AllBooks() {
       setBookDates(data);
       setShowDatesModal(true);
       setSelectedBookId(id_liber);
-    } catch (err) {
-      alert("Gabim gjatë marrjes së datave të zëna!");
+    } catch {
+      alert("Gabim gjatë marrjes së datave!");
     }
   };
 
   return (
     <div className="books-container" style={{ padding: "2rem" }}>
-      
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
         <input
           type="text"
@@ -145,8 +133,7 @@ function AllBooks() {
         />
       </div>
 
-     
-      {Array.isArray(filteredBooks) && filteredBooks.length > 0 ? (
+      {filteredBooks.length > 0 ? (
         <div
           className="books-list"
           style={{
@@ -161,10 +148,9 @@ function AllBooks() {
               className="book-card"
               style={{
                 border: "1px solid #ddd",
-                borderRadius: "10px",
+                background: "white",
                 padding: "1rem",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                backgroundColor: "white",
+                borderRadius: "10px",
               }}
             >
               {book.foto ? (
@@ -176,7 +162,6 @@ function AllBooks() {
                     height: "250px",
                     objectFit: "cover",
                     borderRadius: "8px",
-                    marginBottom: "0.5rem",
                   }}
                 />
               ) : (
@@ -184,91 +169,70 @@ function AllBooks() {
                   style={{
                     width: "100%",
                     height: "250px",
-                    backgroundColor: "#f0f0f0",
+                    background: "#eee",
                     borderRadius: "8px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#777",
                   }}
                 >
                   (Pa foto)
                 </div>
               )}
 
-              <h3 style={{ color: "#333", fontWeight: "600" }}>{book.titulli}</h3>
+              <h3>{book.titulli}</h3>
               <p>Autor: {book.autori}</p>
               <p>Viti: {book.vitiBotimit || "—"}</p>
               <p>Kopje gjithsej: <b>{book.total_kopje}</b></p>
               <p>Kopje të lira: <b>{book.kopje_lira}</b></p>
 
               {showDatePicker === book.id_liber ? (
-                <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                <div style={{ marginTop: "1rem" }}>
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    style={{
-                      padding: "6px",
-                      border: "1px solid #ccc",
-                      borderRadius: "6px",
-                    }}
+                    style={{ padding: "6px", borderRadius: "6px", border: "1px solid #ccc" }}
                   />
                   <button
                     onClick={() => handleHuazo(book.id_liber)}
-                    style={{
-                      marginLeft: "10px",
-                      padding: "6px 10px",
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                    }}
+                    style={{ marginLeft: "10px", padding: "6px 10px", background: "#007bff", color: "white", border: "none", borderRadius: "6px" }}
                   >
                     Konfirmo
                   </button>
                   <button
                     onClick={() => setShowDatePicker(null)}
-                    style={{
-                      marginLeft: "10px",
-                      padding: "6px 10px",
-                      backgroundColor: "#ccc",
-                      border: "none",
-                      borderRadius: "6px",
-                    }}
+                    style={{ marginLeft: "10px", padding: "6px 10px", background: "#ccc", border: "none", borderRadius: "6px" }}
                   >
                     Anulo
                   </button>
                 </div>
               ) : (
-                <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", justifyContent: "center" }}>
+                <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
                   <button
                     onClick={() => setShowDatePicker(book.id_liber)}
                     disabled={book.kopje_lira === 0}
                     style={{
                       flex: 1,
                       padding: "8px",
-                      backgroundColor: book.kopje_lira === 0 ? "#bbb" : "#007bff",
+                      background: book.kopje_lira === 0 ? "#bbb" : "#007bff",
+                      color: "white",
                       border: "none",
                       borderRadius: "6px",
-                      color: "white",
-                      fontWeight: "500",
-                      cursor: book.kopje_lira === 0 ? "not-allowed" : "pointer",
                     }}
                   >
                     {book.kopje_lira === 0 ? "S'ka kopje" : "Huazo"}
                   </button>
+
                   <button
                     onClick={() => fetchDatatEZena(book.id_liber)}
                     style={{
                       flex: 1,
                       padding: "8px",
-                      backgroundColor: "#ffc107",
+                      background: "#ffc107",
+                      color: "#222",
                       border: "none",
                       borderRadius: "6px",
-                      color: "#222",
-                      fontWeight: "500",
-                      cursor: "pointer",
                     }}
                   >
                     Rezervo
@@ -279,7 +243,7 @@ function AllBooks() {
           ))}
         </div>
       ) : (
-        <p style={{ textAlign: "center" }}>Nuk ka libra që përputhen me kërkimin.</p>
+        <p style={{ textAlign: "center" }}>Nuk ka libra që përputhen.</p>
       )}
 
       {popup.show && (
@@ -293,29 +257,10 @@ function AllBooks() {
             color: "white",
             padding: "15px 25px",
             borderRadius: "10px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
             zIndex: 9999,
-            fontWeight: "500",
-            textAlign: "center",
           }}
         >
-          <p>{popup.message}</p>
-          {popup.message.toLowerCase().includes("rezervua") && (
-            <button
-              onClick={() => (window.location.href = "/dashboard")}
-              style={{
-                marginTop: "8px",
-                backgroundColor: "#fff",
-                color: "#28a745",
-                border: "none",
-                borderRadius: "6px",
-                padding: "6px 12px",
-                cursor: "pointer",
-              }}
-            >
-              📖 Shko te Dashboard
-            </button>
-          )}
+          {popup.message}
         </div>
       )}
 
@@ -327,75 +272,45 @@ function AllBooks() {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(0,0,0,0.5)",
+            background: "rgba(0,0,0,0.5)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            zIndex: 10000,
           }}
         >
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "2rem",
-              borderRadius: "10px",
-              width: "420px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-            }}
-          >
-            <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>📅 Datat e librave</h3>
+          <div style={{ background: "white", padding: "2rem", borderRadius: "10px", width: "420px" }}>
+            <h3 style={{ textAlign: "center" }}>📅 Datat e librave</h3>
 
-                    <Calendar
-           className="custom-calendar"
-  tileClassName={({ date }) => {
-    const isZene = bookDates.some((d) => {
-      const start = new Date(d.start);
-      const end = new Date(d.end);
-      return date >= start && date <= end;
-    });
+            <Calendar
+              tileClassName={({ date }) => {
+                const isZene = bookDates.some(
+                  (d) => date >= new Date(d.start) && date <= new Date(d.end)
+                );
+                return isZene ? "zene" : "lire";
+              }}
+              onClickDay={(value) => {
+                const selected = value.toISOString().split("T")[0];
+                const book = books.find((b) => b.id_liber === selectedBookId);
 
-    return isZene ? "zene" : "lire";
-  }}
-  onClickDay={(value) => {
-    const selected = value.toISOString().split("T")[0];
-    const isZene = bookDates.some((d) => {
-      const start = new Date(d.start);
-      const end = new Date(d.end);
-      return value >= start && value <= end;
-    });
+                if (book?.kopje_lira > 0) return showPopup("Ka kopje të lira — huazo direkt!", "#ffc107");
 
-    if (isZene) {
-      alert("Kjo datë është e zënë!");
-      return;
-    }
-    if (window.confirm(`📖 Dëshiron ta rezervosh librin më: ${selected}?`)) {
-      handleRezervo(selectedBookId, selected);
-    }
-  }}
-/>
+                if (bookDates.some((d) => value >= new Date(d.start) && value <= new Date(d.end)))
+                  return alert("Kjo datë është e zënë!");
 
-            <div style={{ textAlign: "center", marginTop: "1rem" }}>
-              <span style={{ color: "red", marginRight: "10px" }}>🔴 Zënë</span>
-              <span style={{ color: "green" }}>🟢 Lirë</span>
-            </div>
+                if (window.confirm(`📖 Rezervo më: ${selected}?`))
+                  handleRezervo(selectedBookId, selected);
+              }}
+            />
 
-            <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
-              <button
-                onClick={() => {
-                  setShowDatesModal(false);
-                  setBookDates([]);
-                }}
-                style={{
-                  padding: "8px 15px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                }}
-              >
-                Mbyll
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                setShowDatesModal(false);
+                setBookDates([]);
+              }}
+              style={{ marginTop: "1rem", padding: "8px", background: "#007bff", color: "white", borderRadius: "6px", border: "none" }}
+            >
+              Mbyll
+            </button>
           </div>
         </div>
       )}

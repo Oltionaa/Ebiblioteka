@@ -67,7 +67,6 @@ export const ktheLiber = async (req, res) => {
     res.status(500).json({ message: "Gabim në server gjatë kthimit të librit." });
   }
 };
-
 export const getDatatEZena = async (req, res) => {
   const { id_liber } = req.params;
 
@@ -80,21 +79,21 @@ export const getDatatEZena = async (req, res) => {
     );
 
     const [rezervime] = await pool.query(
-      `SELECT dataRezervuar AS start, dataRezervuar AS end
+      `SELECT dataRezervuar AS start, DATE_ADD(dataRezervuar, INTERVAL 7 DAY) AS end
        FROM rezervim
        WHERE id_liber = ? AND (statusi='ne_pritje' OR statusi='miratuar')`,
       [id_liber]
     );
 
-    const combined = [...huazime, ...rezervime].map((d) => ({
+    const datat = [...huazime, ...rezervime].map(d => ({
       start: d.start,
       end: d.end
     }));
 
-    res.json(Array.isArray(combined) ? combined : []);
+    res.json(datat);
   } catch (err) {
-    console.error("Gabim gjatë marrjes së datave të zëna:", err);
-    res.json([]); 
+    console.error("Gabim gjatë datave të zëna:", err);
+    res.json([]);
   }
 };
 
@@ -103,23 +102,25 @@ export const getHuazimetByUser = async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      `SELECT 
-         h.id_huazimi,
-         h.id_liber,
-         l.titulli,
-         h.dataHuazimit,
-         h.dataKthimit,
-         h.statusi
-       FROM huazim h
-       LEFT JOIN liber l ON h.id_liber = l.id_liber
-       WHERE h.id_perdoruesi = ?
-       ORDER BY h.dataHuazimit DESC`,
+      `
+      SELECT
+        h.id_huazimi AS id_huazimi,
+        h.id_liber,
+        l.titulli,
+        h.dataHuazimit AS data_marrjes,
+        h.dataKthimit AS data_kthimit,
+        h.statusi
+      FROM huazim h
+      JOIN liber l ON h.id_liber = l.id_liber
+      WHERE h.id_perdoruesi = ?
+      ORDER BY h.dataHuazimit DESC
+      `,
       [id]
     );
 
     res.json(rows);
   } catch (err) {
-    console.error("Gabim gjatë marrjes së huazimeve:", err);
     res.status(500).json({ message: "Gabim gjatë marrjes së huazimeve." });
   }
 };
+

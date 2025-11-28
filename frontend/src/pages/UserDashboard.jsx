@@ -12,7 +12,6 @@ function UserDashboard() {
     color: "#28a745",
   });
 
-  // ===== Rekomandimet (SHTUAR) =====
   const [rekomandimText, setRekomandimText] = useState("");
   const [showRekomandimPopup, setShowRekomandimPopup] = useState(false);
   const [idLiberPerRekomandim, setIdLiberPerRekomandim] = useState(null);
@@ -33,9 +32,9 @@ function UserDashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-  id_liber: idLiberPerRekomandim,
-  id_perdoruesi,
-  mesazhi: rekomandimText,
+          id_liber: idLiberPerRekomandim,
+          id_perdoruesi,
+          mesazhi: rekomandimText,
         }),
       });
 
@@ -49,7 +48,6 @@ function UserDashboard() {
       showPopup("Gabim gjatë ruajtjes!", "#dc3545");
     }
   };
-  // ==================================
 
   const user = JSON.parse(localStorage.getItem("user"));
   const id_perdoruesi = user?.id_perdoruesi;
@@ -57,8 +55,7 @@ function UserDashboard() {
   const formatDate = (dateString) => {
     if (!dateString) return "—";
     const date = new Date(dateString);
-    if (isNaN(date)) return dateString;
-    return date.toISOString().split("T")[0];
+    return !isNaN(date) ? date.toISOString().split("T")[0] : dateString;
   };
 
   const showPopup = useCallback((message, color = "#28a745") => {
@@ -70,25 +67,14 @@ function UserDashboard() {
     if (!id_perdoruesi) return;
 
     try {
-      const resHuazime = await fetch(
-        `http://localhost:5000/api/huazime/user/${id_perdoruesi}`
-      );
-      const resRezervime = await fetch(
-        `http://localhost:5000/api/rezervime/user/${id_perdoruesi}`
-      );
-      const resNjoftime = await fetch(
-        `http://localhost:5000/api/njoftime/${id_perdoruesi}`
-      );
+      const resHuazime = await fetch(`http://localhost:5000/api/huazime/user/${id_perdoruesi}`);
+      const resRezervime = await fetch(`http://localhost:5000/api/rezervime/user/${id_perdoruesi}`);
+      const resNjoftime = await fetch(`http://localhost:5000/api/njoftim/${id_perdoruesi}`);
 
-      const dataHuazime = await resHuazime.json();
-      const dataRezervime = await resRezervime.json();
-      const dataNjoftime = await resNjoftime.json();
-
-      setHuazimet(dataHuazime);
-      setRezervimet(dataRezervime);
-      setNjoftime(dataNjoftime);
+      setHuazimet(await resHuazime.json());
+      setRezervimet(await resRezervime.json());
+      setNjoftime(await resNjoftime.json());
     } catch (err) {
-      console.error("Gabim:", err);
       showPopup("Gabim gjatë marrjes së të dhënave!", "#dc3545");
     }
   }, [id_perdoruesi, showPopup]);
@@ -96,6 +82,22 @@ function UserDashboard() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const hapNjoftimet = async () => {
+    setShowNotifications(!showNotifications);
+
+    if (!showNotifications && njoftime.length > 0) {
+      try {
+        await fetch(`http://localhost:5000/api/njoftim/lexo/${id_perdoruesi}`, {
+          method: "PUT",
+        });
+
+        setNjoftime((prev) => prev.map((n) => ({ ...n, lexuar: 1 })));
+      } catch (e) {
+        console.log("Gabim gjatë azhurnimit të njoftimeve!");
+      }
+    }
+  };
 
   const ktheLiber = async (id_liber) => {
     if (!window.confirm("A dëshiron ta kthesh librin?")) return;
@@ -121,10 +123,9 @@ function UserDashboard() {
     if (!window.confirm("A je i sigurt për fshirje?")) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/rezervime/fshi/${id_rezervimi}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch(`http://localhost:5000/api/rezervime/fshi/${id_rezervimi}`, {
+        method: "DELETE",
+      });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
@@ -141,14 +142,11 @@ function UserDashboard() {
     if (!dataRe) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/rezervime/ndrysho/${id_rezervimi}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: dataRe }),
-        }
-      );
+      const res = await fetch(`http://localhost:5000/api/rezervime/ndrysho/${id_rezervimi}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dataRezervimit: dataRe }),
+      });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
@@ -161,27 +159,13 @@ function UserDashboard() {
   };
 
   const renderTable = (title, data, type) => (
-    <div
-      style={{
-        marginBottom: "3rem",
-        background: "#fff",
-        borderRadius: "12px",
-        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-        padding: "1.5rem",
-      }}
-    >
+    <div style={{ marginBottom: "3rem", background: "#fff", borderRadius: "12px", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", padding: "1.5rem" }}>
       <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>{title}</h2>
 
       {data.length === 0 ? (
         <p style={{ textAlign: "center" }}>Nuk ka të dhëna.</p>
       ) : (
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            textAlign: "center",
-          }}
-        >
+        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center" }}>
           <thead>
             <tr style={{ background: "#007bff", color: "white" }}>
               <th>#</th>
@@ -192,65 +176,30 @@ function UserDashboard() {
               <th>Veprime</th>
             </tr>
           </thead>
-
           <tbody>
             {data.map((row, index) => (
               <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
                 <td>{index + 1}</td>
                 <td>{row.titulli}</td>
-                <td>{formatDate(row.dataHuazimit || row.dataRezervimit)}</td>
-                <td>{formatDate(row.dataKthimit || row.dataRezervuar)}</td>
+                <td>{formatDate(row.data_marrjes)}</td>
+                <td>{formatDate(row.data_kthimit)}</td>
                 <td style={{ fontWeight: "bold" }}>{row.statusi}</td>
-
                 <td>
                   {type === "rezervim" ? (
                     <>
-                      <button
-                        onClick={() => ndryshoDate(row.id_rezervimi)}
-                        style={{
-                          marginRight: "8px",
-                          background: "#ffc107",
-                          padding: "6px 10px",
-                        }}
-                      >
+                      <button onClick={() => ndryshoDate(row.id_rezervimi)} style={{ marginRight: "8px", background: "#ffc107", padding: "6px 10px" }}>
                         Ndrysho
                       </button>
-                      <button
-                        onClick={() => fshiRezervim(row.id_rezervimi)}
-                        style={{
-                          background: "#dc3545",
-                          color: "white",
-                          padding: "6px 10px",
-                        }}
-                      >
+                      <button onClick={() => fshiRezervim(row.id_rezervimi)} style={{ background: "#dc3545", color: "white", padding: "6px 10px" }}>
                         Fshi
                       </button>
                     </>
                   ) : (
                     <>
-                      <button
-                        onClick={() => ktheLiber(row.id_liber)}
-                        disabled={row.statusi === "kthyer"}
-                        style={{
-                          background:
-                            row.statusi === "kthyer" ? "#aaa" : "#17a2b8",
-                          color: "white",
-                          padding: "6px 10px",
-                          marginRight: "8px",
-                        }}
-                      >
+                      <button onClick={() => ktheLiber(row.id_liber)} disabled={row.statusi === "kthyer"} style={{ background: row.statusi === "kthyer" ? "#aaa" : "#17a2b8", color: "white", padding: "6px 10px", marginRight: "8px" }}>
                         {row.statusi === "kthyer" ? "Kthyer" : "Kthe librin"}
                       </button>
-
-                      {/* ===== SHTIMI I BUTONIT PËR REKOMANDIM ===== */}
-                      <button
-                        onClick={() => hapRekomandimPopup(row.id_liber)}
-                        style={{
-                          background: "#ffc107",
-                          padding: "6px 10px",
-                          fontWeight: "600",
-                        }}
-                      >
+                      <button onClick={() => hapRekomandimPopup(row.id_liber)} style={{ background: "#ffc107", padding: "6px 10px", fontWeight: "600" }}>
                         Shkruaj Rekomandim
                       </button>
                     </>
@@ -268,17 +217,11 @@ function UserDashboard() {
     <div style={{ padding: "2rem", background: "#f5f5f5", minHeight: "100vh" }}>
       <div style={{ textAlign: "right", marginBottom: "1rem" }}>
         <button
-          onClick={() => setShowNotifications(!showNotifications)}
-          style={{
-            background: "transparent",
-            border: "none",
-            fontSize: "26px",
-            cursor: "pointer",
-            position: "relative",
-          }}
+          onClick={hapNjoftimet}
+          style={{ background: "transparent", border: "none", fontSize: "26px", cursor: "pointer", position: "relative" }}
         >
           🔔
-          {njoftime.length > 0 && (
+          {njoftime.filter((n) => !n.lexuar).length > 0 && (
             <span
               style={{
                 position: "absolute",
@@ -291,24 +234,15 @@ function UserDashboard() {
                 fontSize: "12px",
               }}
             >
-              {njoftime.length}
+              {njoftime.filter((n) => !n.lexuar).length}
             </span>
           )}
         </button>
       </div>
 
       {showNotifications && (
-        <div
-          style={{
-            background: "white",
-            padding: "1rem",
-            borderRadius: "12px",
-            marginBottom: "2rem",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-          }}
-        >
+        <div style={{ background: "white", padding: "1rem", borderRadius: "12px", marginBottom: "2rem", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
           <h2>Njoftimet</h2>
-
           {njoftime.length === 0 ? (
             <p>Nuk ka njoftime.</p>
           ) : (
@@ -331,14 +265,11 @@ function UserDashboard() {
         </div>
       )}
 
-      <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>
-        📚 Dashboard i Përdoruesit
-      </h1>
+      <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>📚 Dashboard i Përdoruesit</h1>
 
       {renderTable("Librat e Huazuar", huazimet, "huazim")}
       {renderTable("Librat e Rezervuar", rezervimet, "rezervim")}
 
-      {/* ===== POPUP PËR REKOMANDIM ===== */}
       {showRekomandimPopup && (
         <div
           style={{
@@ -354,14 +285,7 @@ function UserDashboard() {
             zIndex: 9999,
           }}
         >
-          <div
-            style={{
-              background: "white",
-              padding: "2rem",
-              borderRadius: "12px",
-              width: "400px",
-            }}
-          >
+          <div style={{ background: "white", padding: "2rem", borderRadius: "12px", width: "400px" }}>
             <h2>Shkruaj Rekomandim</h2>
 
             <textarea
@@ -375,28 +299,23 @@ function UserDashboard() {
             <div style={{ marginTop: "1rem", textAlign: "right" }}>
               <button
                 onClick={() => setShowRekomandimPopup(false)}
-  style={{
-    padding: "6px 12px",
-    border: "1px solid #6c757d",
-    background: "white",
-    color: "#6c757d",
-    borderRadius: "4px",
-    marginRight: "10px",
-    cursor: "pointer",
-    fontWeight: "600"
-  }}
-  onMouseEnter={(e) => (e.target.style.background = "#e6e6e6")}
-  onMouseLeave={(e) => (e.target.style.background = "white")}
->
-  Anulo
+                style={{
+                  padding: "6px 12px",
+                  border: "1px solid #6c757d",
+                  background: "white",
+                  color: "#6c757d",
+                  borderRadius: "4px",
+                  marginRight: "10px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Anulo
               </button>
+
               <button
                 onClick={ruajRekomandim}
-                style={{
-                  background: "#28a745",
-                  color: "white",
-                  padding: "6px 12px",
-                }}
+                style={{ background: "#28a745", color: "white", padding: "6px 12px" }}
               >
                 Ruaj
               </button>

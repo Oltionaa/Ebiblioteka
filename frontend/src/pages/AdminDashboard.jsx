@@ -264,9 +264,7 @@ function StaffManagement() {
       </table>
     </div>
   );
-}
-
-function Reports() {
+}function Reports() {
   const [raporti, setRaporti] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -280,10 +278,43 @@ function Reports() {
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Duke u ngarkuar...</p>;
+  if (loading) return <p style={{ marginTop: "40px" }}>Duke u ngarkuar...</p>;
 
   if (!raporti || !raporti.permbajtja)
-    return <p>Nuk ka asnjë raport ende.</p>;
+    return (
+      <div style={{ marginTop: "60px", textAlign: "center" }}>
+        <h1 style={{ fontSize: "32px", marginBottom: "10px", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
+          📊 Raportet & Statistikat
+        </h1>
+        <p style={{ color: "#555" }}>Nuk ka asnjë raport ende.</p>
+
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "30px" }}>
+          <button
+            onClick={() =>
+              fetch("http://localhost:5000/api/raporte/gjenero", {
+                method: "POST",
+              }).then(() => window.location.reload())
+            }
+            style={{
+              padding: "12px 28px",
+              background: "#4f46e5",
+              color: "white",
+              fontSize: "16px",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+              transition: "0.2s",
+            }}
+          >
+            🔄 Gjenero raport të ri
+          </button>
+        </div>
+      </div>
+    );
 
   const barData = {
     labels: ["Përdorues", "Libra", "Rezervime", "Huazime"],
@@ -294,26 +325,38 @@ function Reports() {
           raporti.permbajtja.total_perdorues,
           raporti.permbajtja.total_libra,
           raporti.permbajtja.total_rezervime,
-          raporti.permbajtja.total_huazime
+          raporti.permbajtja.total_huazime,
         ],
-        backgroundColor: ["#4ade80", "#60a5fa", "#f472b6", "#facc15"]
-      }
-    ]
+        backgroundColor: ["#4ade80", "#60a5fa", "#f472b6", "#facc15"],
+      },
+    ],
   };
 
   return (
-    <div>
-      <h1>📊 Raportet & Statistikat</h1>
+    <div style={{ marginTop: "40px" }}>
+      <h1 style={{ fontSize: "32px", marginBottom: "5px", display: "flex", alignItems: "center", gap: "10px" }}>
+        📊 Raportet & Statistikat
+      </h1>
 
-      <p style={{ marginTop: "-10px", color: "#666" }}>
-        Raporti i fundit: <b>{raporti.dataGjenerimit}</b>
+      <p style={{ marginTop: "-5px", color: "#555", fontSize: "15px" }}>
+        Raporti i fundit: <b>{new Date(raporti.dataGjenerimit).toLocaleDateString()}</b>
       </p>
 
-      <div className="chart-box">
-        <Bar data={barData} />
+      <div className="chart-box" style={{ marginTop: "30px" }}>
+        <Bar
+          data={barData}
+          options={{
+            scales: {
+              y: {
+                beginAtZero: false,
+                ticks: { stepSize: 5 },
+              },
+            },
+          }}
+        />
       </div>
 
-      <center>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
         <button
           onClick={() =>
             fetch("http://localhost:5000/api/raporte/gjenero", {
@@ -321,18 +364,23 @@ function Reports() {
             }).then(() => window.location.reload())
           }
           style={{
-            marginTop: "20px",
-            padding: "10px 20px",
+            padding: "12px 28px",
             background: "#4f46e5",
             color: "white",
+            fontSize: "16px",
             border: "none",
-            borderRadius: "8px",
+            borderRadius: "10px",
             cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+            transition: "0.2s",
           }}
         >
           🔄 Gjenero raport të ri
         </button>
-      </center>
+      </div>
     </div>
   );
 }

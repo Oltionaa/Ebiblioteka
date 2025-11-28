@@ -1,108 +1,88 @@
 import pool from "../utils/db.js";
 
 export const rezervoLiber = async (req, res) => {
-  const { id_perdoruesi, id_liber, dataRezervuar } = req.body;
+  const { id_perdoruesi, id_liber, dataRezervimit } = req.body;
+
+  if (!dataRezervimit)
+    return res.status(400).json({ message: "Ju lutem zgjidhni një datë!" });
 
   try {
-    const [kopje] = await pool.query(
-      "SELECT id_kopja FROM kopja_librit WHERE id_liber = ? AND statusi = 'i_lire' LIMIT 1",
-      [id_liber]
-    );
-
-    if (kopje.length > 0) {
-      return res.json({
-        message: "Ka kopje të lira — mund ta huazosh direkt pa rezervim!"
-      });
-    }
-
-    const [datatEZena] = await pool.query(
-      `SELECT 1 FROM (
-         SELECT dataHuazimit AS start, dataKthimit AS end
-         FROM huazim
-         WHERE id_liber = ? AND statusi = 'aktive'
-         UNION
-         SELECT dataRezervuar AS start, dataRezervuar AS end
-         FROM rezervim
-         WHERE id_liber = ? AND statusi = 'miratuar'
-       ) as d
-       WHERE ? BETWEEN start AND end`,
-      [id_liber, id_liber, dataRezervuar]
-    );
-
-    if (datatEZena.length > 0) {
-      return res.status(400).json({ message: "Kjo datë është e zënë, zgjidh një tjetër!" });
-    }
+    const d = new Date(dataRezervimit);
+    d.setDate(d.getDate() + 7);
+    const dataRezervuar = d.toISOString().split("T")[0];
 
     await pool.query(
       `INSERT INTO rezervim (id_perdoruesi, id_liber, dataRezervimit, dataRezervuar, statusi)
-       VALUES (?, ?, CURDATE(), ?, 'ne_pritje')`,
-      [id_perdoruesi, id_liber, dataRezervuar]
+       VALUES (?, ?, ?, ?, 'ne_pritje')`,
+      [id_perdoruesi, id_liber, dataRezervimit, dataRezervuar]
     );
 
-    res.json({ message: `📅 Rezervimi u bë për datën ${dataRezervuar}!` });
+    res.json({ message: `Rezervimi u bë me sukses! Kthimi deri më ${dataRezervuar}` });
   } catch (err) {
-    console.error("Gabim gjatë rezervimit:", err);
-    res.status(500).json({ message: "Gabim në server gjatë rezervimit." });
+    console.log(err);
+    res.status(500).json({ message: "Gabim në server!" });
   }
 };
 
 export const getRezervimetByUser = async (req, res) => {
-  const { id } = req.params;
+  const { id_perdoruesi } = req.params;
 
   try {
     const [rows] = await pool.query(
-      `SELECT 
-         r.id_rezervimi,
-         l.titulli,
-         r.dataRezervuar AS data,
-         r.statusi,
-         'rezervim' AS tipi
+      `SELECT r.id_rezervimi,
+              l.titulli,
+              r.dataRezervimit AS data_marrjes,
+              r.dataRezervuar AS data_kthimit,
+              r.statusi,
+              'rezervim' AS tipi
        FROM rezervim r
        JOIN liber l ON r.id_liber = l.id_liber
        WHERE r.id_perdoruesi = ?
-
-       UNION ALL
-
-       SELECT 
-         h.id_huazimi,
-         l.titulli,
-         h.dataKthimit AS data,
-         h.statusi,
-         'huazim' AS tipi
-       FROM huazim h
-       JOIN liber l ON h.id_liber = l.id_liber
-       WHERE h.id_perdoruesi = ?
-
-       ORDER BY data DESC`,
-      [id, id]
+       ORDER BY r.dataRezervimit DESC`,
+      [id_perdoruesi]
     );
 
     res.json(rows);
   } catch (err) {
-    console.error("Gabim gjatë marrjes së të dhënave:", err);
-    res.status(500).json({ message: "Gabim në server." });
+    res.status(500).json({ message: "Gabim në server!" });
   }
 };
 
 export const fshiRezervim = async (req, res) => {
+  const { id_rezervimi } = req.params;
+
   try {
-    await pool.query("DELETE FROM rezervim WHERE id_rezervimi = ?", [req.params.id]);
+    const [result] = await pool.query(
+      "DELETE FROM rezervim WHERE id_rezervimi = ?",
+      [id_rezervimi]
+    );
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ message: "Rezervimi nuk ekziston!" });
+
     res.json({ message: "Rezervimi u fshi me sukses!" });
   } catch (err) {
-    res.status(500).json({ message: "Gabim gjatë fshirjes së rezervimit." });
+    res.status(500).json({ message: "Gabim gjatë fshirjes!" });
   }
 };
 
 export const ndryshoRezervim = async (req, res) => {
+  const { id_rezervimi } = req.params;
+  const { dataRezervimit } = req.body;
+
   try {
+    const d = new Date(dataRezervimit);
+    d.setDate(d.getDate() + 7);
+    const dataKthimit = d.toISOString().split("T")[0];
+
     await pool.query(
-      "UPDATE rezervim SET dataRezervuar = ?, statusi = 'ne_pritje' WHERE id_rezervimi = ?",
-      [req.body.dataRezervuar, req.params.id]
+      `UPDATE rezervim SET dataRezervimit=?, dataRezervuar=? WHERE id_rezervimi=?`,
+      [dataRezervimit, dataKthimit, id_rezervimi]
     );
 
-    res.json({ message: "Data e rezervimit u ndryshua!" });
+    res.json({ message: "Data u ndryshua me sukses!" });
   } catch (err) {
-    res.status(500).json({ message: "Gabim në ndryshimin e rezervimit." });
+    res.status(500).json({ message: "Gabim gjatë ndryshimit!" });
   }
 };
 
@@ -117,24 +97,58 @@ export const getAllRezervimet = async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ message: "Gabim në marrjen e rezervimeve." });
+    res.status(500).json({ message: "Gabim gjatë marrjes së rezervimeve!" });
   }
-};
+};export const miratoRezervim = async (req, res) => {
+  const { id_rezervimi } = req.params;
 
-export const miratoRezervim = async (req, res) => {
   try {
-    await pool.query("UPDATE rezervim SET statusi='miratuar' WHERE id_rezervimi = ?", [req.params.id]);
+    const [[rez]] = await pool.query(
+      "SELECT id_perdoruesi FROM rezervim WHERE id_rezervimi = ?",
+      [id_rezervimi]
+    );
+
+    if (!rez) return res.status(404).json({ message: "Rezervimi nuk u gjet!" });
+
+    await pool.query(
+      "UPDATE rezervim SET statusi='miratuar' WHERE id_rezervimi = ?",
+      [id_rezervimi]
+    );
+
+   await pool.query(
+  "INSERT INTO njoftim (id_perdoruesi, mesazh, tipi) VALUES (?, ?, ?)",
+  [rez.id_perdoruesi, "Rezervimi juaj u MIRATUA ✔", "success"]
+);
+
     res.json({ message: "Rezervimi u miratua!" });
   } catch (err) {
-    res.status(500).json({ message: "Gabim gjatë miratimit." });
+    console.log(err);
+    res.status(500).json({ message: "Gabim gjatë miratimit!" });
   }
 };
 
 export const refuzoRezervim = async (req, res) => {
+  const { id_rezervimi } = req.params;
+
   try {
-    await pool.query("UPDATE rezervim SET statusi='refuzuar' WHERE id_rezervimi = ?", [req.params.id]);
+    const [[rez]] = await pool.query(
+      "SELECT id_perdoruesi FROM rezervim WHERE id_rezervimi = ?",
+      [id_rezervimi]
+    );
+
+    await pool.query(
+      "UPDATE rezervim SET statusi='refuzuar' WHERE id_rezervimi = ?",
+      [id_rezervimi]
+    );
+
+await pool.query(
+  "INSERT INTO njoftim (id_perdoruesi, mesazh, tipi) VALUES (?, ?, ?)",
+  [rez.id_perdoruesi, "Rezervimi juaj u REFUZUA ❌", "error"]
+);
+
+
     res.json({ message: "Rezervimi u refuzua!" });
   } catch (err) {
-    res.status(500).json({ message: "Gabim gjatë refuzimit." });
+    res.status(500).json({ message: "Gabim gjatë refuzimit!" });
   }
 };
