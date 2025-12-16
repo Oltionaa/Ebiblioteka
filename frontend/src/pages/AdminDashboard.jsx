@@ -268,6 +268,25 @@ function StaffManagement() {
   const [raporti, setRaporti] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const gjeneroRaport = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user || !user.id_perdoruesi) {
+      alert("Nuk u gjet përdoruesi i kyçur");
+      return;
+    }
+
+    fetch("http://localhost:5000/api/raporte/gjenero", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id_perdoruesi: user.id_perdoruesi,
+      }),
+    }).then(() => window.location.reload());
+  };
+
   useEffect(() => {
     fetch("http://localhost:5000/api/raporte/fundit")
       .then((res) => res.json())
@@ -283,36 +302,22 @@ function StaffManagement() {
   if (!raporti || !raporti.permbajtja)
     return (
       <div style={{ marginTop: "60px", textAlign: "center" }}>
-        <h1 style={{ fontSize: "32px", marginBottom: "10px", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-          📊 Raportet & Statistikat
-        </h1>
+        <h1 style={{ fontSize: "32px" }}>📊 Raportet & Statistikat</h1>
         <p style={{ color: "#555" }}>Nuk ka asnjë raport ende.</p>
 
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "30px" }}>
-          <button
-            onClick={() =>
-              fetch("http://localhost:5000/api/raporte/gjenero", {
-                method: "POST",
-              }).then(() => window.location.reload())
-            }
-            style={{
-              padding: "12px 28px",
-              background: "#4f46e5",
-              color: "white",
-              fontSize: "16px",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
-              transition: "0.2s",
-            }}
-          >
-            🔄 Gjenero raport të ri
-          </button>
-        </div>
+        <button
+          onClick={gjeneroRaport}
+          style={{
+            padding: "12px 28px",
+            background: "#4f46e5",
+            color: "white",
+            border: "none",
+            borderRadius: "10px",
+            cursor: "pointer",
+          }}
+        >
+          🔄 Gjenero raport të ri
+        </button>
       </div>
     );
 
@@ -334,48 +339,27 @@ function StaffManagement() {
 
   return (
     <div style={{ marginTop: "40px" }}>
-      <h1 style={{ fontSize: "32px", marginBottom: "5px", display: "flex", alignItems: "center", gap: "10px" }}>
-        📊 Raportet & Statistikat
-      </h1>
+      <h1 style={{ fontSize: "32px" }}>📊 Raportet & Statistikat</h1>
 
-      <p style={{ marginTop: "-5px", color: "#555", fontSize: "15px" }}>
-        Raporti i fundit: <b>{new Date(raporti.dataGjenerimit).toLocaleDateString()}</b>
+      <p style={{ color: "#555" }}>
+        Raporti i fundit:{" "}
+        <b>{new Date(raporti.dataGjenerimit).toLocaleDateString()}</b>
       </p>
 
       <div className="chart-box" style={{ marginTop: "30px" }}>
-        <Bar
-          data={barData}
-          options={{
-            scales: {
-              y: {
-                beginAtZero: false,
-                ticks: { stepSize: 5 },
-              },
-            },
-          }}
-        />
+        <Bar data={barData} />
       </div>
 
       <div style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}>
         <button
-          onClick={() =>
-            fetch("http://localhost:5000/api/raporte/gjenero", {
-              method: "POST",
-            }).then(() => window.location.reload())
-          }
+          onClick={gjeneroRaport}
           style={{
             padding: "12px 28px",
             background: "#4f46e5",
             color: "white",
-            fontSize: "16px",
             border: "none",
             borderRadius: "10px",
             cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
-            transition: "0.2s",
           }}
         >
           🔄 Gjenero raport të ri
@@ -384,6 +368,7 @@ function StaffManagement() {
     </div>
   );
 }
+
 
 function SystemMonitor() {
   const [stats, setStats] = useState(null);

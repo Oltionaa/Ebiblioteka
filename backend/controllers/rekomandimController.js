@@ -1,27 +1,20 @@
 import Rekomandim from "../models/Rekomandim.js";
 import pool from "../utils/db.js";
 
-/**
- * Shton një rekomandim nga përdoruesi për një libër të caktuar
- * POST /api/rekomandime/shto
- */
 export const shtoRekomandim = async (req, res) => {
   try {
     const { id_perdoruesi, id_liber, mesazhi } = req.body;
 
-    // VALIDIM
     if (!id_perdoruesi || !id_liber || !mesazhi?.trim()) {
       return res.status(400).json({ message: "Të dhënat mungojnë!" });
     }
 
-    // Ruaje rekomandimin
     await Rekomandim.shto({
       id_perdoruesi,
       id_liber,
       mesazhi
     });
 
-    // Merr të gjithë bibliotekistët për njoftim
     const [bibliotekistet] = await pool.query(
       "SELECT id_perdoruesi FROM perdoruesi WHERE roli='bibliotekist'"
     );
@@ -49,11 +42,6 @@ export const shtoRekomandim = async (req, res) => {
   }
 };
 
-
-/**
- * Merr të gjithë rekomandimet
- * GET /api/rekomandime
- */
 export const merrRekomandimet = async (req, res) => {
   try {
     const [rows] = await Rekomandim.merrTeGjitha();

@@ -3,10 +3,8 @@ import { shtoRekomandim, merrRekomandimet } from "../controllers/rekomandimContr
 
 const router = express.Router();
 
-// POST /api/rekomandime/shto
-router.post("/shto", shtoRekomandim);
 
-// GET /api/rekomandime
+router.post("/shto", shtoRekomandim);
 router.get("/", merrRekomandimet);
 
 export default router;
