@@ -397,28 +397,17 @@ function SystemMonitor() {
 
 function Logs() {
   const [logs, setLogs] = useState([]);
-  const [filterRole, setFilterRole] = useState("all");
 
   useEffect(() => {
     fetch("http://localhost:5000/api/logs")
       .then((res) => res.json())
-      .then((data) => setLogs(data));
+      .then((data) => setLogs(data))
+      .catch((err) => console.error(err));
   }, []);
 
   return (
     <div>
-      <h1>Audit Logs</h1>
-
-      <select
-        className="filter-select"
-        value={filterRole}
-        onChange={(e) => setFilterRole(e.target.value)}
-      >
-        <option value="all">Të gjithë</option>
-        <option value="Admin">Admin</option>
-        <option value="Bibliotekar">Bibliotekar</option>
-        <option value="Perdorues">Përdorues</option>
-      </select>
+      <h1>Audit Logs (Admin)</h1>
 
       <table className="admin-table">
         <thead>
@@ -433,26 +422,27 @@ function Logs() {
         </thead>
 
         <tbody>
-          {logs
-            .filter((l) =>
-              filterRole === "all" ? true : l.roli === filterRole
-            )
-            .map((l) => (
-              <tr key={l.id_log}>
-                <td>{l.id_log}</td>
-                <td>
-                  {l.emri} {l.mbiemri}
-                </td>
-                <td>{l.roli}</td>
-                <td>{l.veprimi}</td>
-                <td>{l.ip || "—"}</td>
-                <td>{new Date(l.created_at).toLocaleString()}</td>
-              </tr>
-            ))}
+          {logs.length === 0 && (
+            <tr>
+              <td colSpan="6">Nuk ka log-e</td>
+            </tr>
+          )}
+
+          {logs.map((l) => (
+            <tr key={l.id_log}>
+              <td>{l.id_log}</td>
+              <td>{l.perdoruesi}</td>
+              <td>{l.roli}</td>
+              <td>{l.veprimi}</td>
+              <td>{l.ip || "—"}</td>
+              <td>{new Date(l.created_at).toLocaleString()}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
+
 
 export default AdminDashboard;

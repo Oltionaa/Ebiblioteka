@@ -1,14 +1,14 @@
 import pool from "../utils/db.js";
 
-const Rekomandim = {
-  shto: async ({ id_perdoruesi, id_liber, mesazhi }) => {
+class Rekomandim {
+  static async shto({ id_perdoruesi, id_liber, mesazhi }) {
     return pool.query(
       "INSERT INTO rekomandim (id_perdoruesi, id_liber, mesazhi, dataRekomandimit) VALUES (?, ?, ?, NOW())",
       [id_perdoruesi, id_liber || null, mesazhi]
     );
-  },
+  }
 
-  merrTeGjitha: async () => {
+  static async merrTeGjitha() {
     return pool.query(`
       SELECT r.id_rekomandimi, r.mesazhi, r.dataRekomandimit,
              p.emri, p.mbiemri, l.titulli
@@ -18,6 +18,6 @@ const Rekomandim = {
       ORDER BY r.dataRekomandimit DESC
     `);
   }
-};
+}
 
 export default Rekomandim;
